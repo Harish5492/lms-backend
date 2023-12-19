@@ -1,17 +1,33 @@
 const mongoose = require('mongoose')
 
-const courses = new mongoose.Schema({
-  firstName:{ type: String, required: [true,"First name is Required"] },
-  lastName:{ type: String, required: [true,"Last name is Required"] },
-  userName:{ type: String, required: [true,"User name is Required"] },
-  email:{ type: String, unique:true, required: [true,"User email is Required"] },
-  password:{ type: String, required: [true,"User password is Required"]},
-  created_on: {type: Date, default: Date.now}
+// Course Schema
+const courseSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  // instructor: { type: Schema.Types.ObjectId, ref: 'User', required: true },
+  instructor: { type: String, required: true },
+  imageUrl : {type:String},
+  lessons: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Lesson' }],
+  requirements: { type: String, required: true },
+  price: { type : Number, required :true},
+  duration: { type : String, required :true},
+  language: { type : String, required :true},
+  subject: { type : String, required :true},
+  level: { type : String, required :true},
+  updatedOn:{type: Date } 
+  // studentsEnrolled: [{ type: Schema.Types.ObjectId, ref: 'User' }],
 });
-//cardImg: cardImage,
-// button: "All Levels",
-// heading: "Communications",
-// title: "Successful Negotiation: Master Your Negotiating Skills",
-// description: "Negotiation is a skill well worth mastering – by putting …",
-// price: "Free"
-module.exports = mongoose.model('Courses', courses)
+
+const Course = mongoose.model('Course', courseSchema);
+
+// Lesson Schema
+const lessonSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  content: { type: String, required: true },
+  videoUrl: { type: String },
+  course: { type: mongoose.Schema.Types.ObjectId, ref: 'Course', required: true },
+});
+
+const Lesson = mongoose.model('Lesson', lessonSchema);
+
+module.exports = { Course, Lesson }; 

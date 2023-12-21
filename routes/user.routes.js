@@ -35,5 +35,9 @@ router.post('/delete/:title',courseController.deletemul)
 router.delete('/deleteCourse/:id', courseController.deleteCourse)
 router.delete('/deleteLesson/:id', courseController.deleteLesson)
 
+router.post ('/billing',courseController.billingDetails)
+router.get('/payment/checkStatus',courseController.checkStatus)
+router.post('/payment',courseController.payment)
+
  
 module.exports = router; 

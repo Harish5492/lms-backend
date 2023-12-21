@@ -15,4 +15,4 @@ const Billing = new mongoose.Schema({
     created_on: { type: Date, default: Date.now }
 });
 
-module.exports = moongose.billingmodel('Billing',Billing)
+module.exports = mongoose.model('Billing',Billing)

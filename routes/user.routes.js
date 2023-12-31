@@ -4,6 +4,9 @@ const courseController = require('../controllers/courses.controller')
 const authMiddleware = require('../middleware/authenticate');
 const { validateSignup,validEmail,handleValidationErrors } = require('../middleware/signUp');
     
+
+//TODO seprate user routes , course routes, payment routes to different files
+
 router.get('/status', userController.status);
 router.get('/getAllUsers', userController.getAllUsers);
 router.post('/getUser', userController.getUser);
@@ -19,8 +22,6 @@ router.post('/login', userController.login);
 // router.post('/forgot/:email',validateSignup[5],validateSignup[6],handleValidationErrors,userController.forgotPassword);  
 
 router.post('/changePassword',validateSignup[5],validateSignup[6],handleValidationErrors,userController.updatePassword); 
-   
-
 router.get('/allCourses',courseController.getAllCourses)
 router.get('/allCourses/:id',courseController.getAllLessons)
 router.get('/getCourse/:id',courseController.getCoursesById)

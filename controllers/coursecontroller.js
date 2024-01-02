@@ -1,5 +1,6 @@
 // const coursemodel = require('../models/coursemodel')
-const { Course, Lesson } = require('../models/coursemodel')
+const { Course, Lesson } = require('../models/coursemodel');
+const courseRouter = require('../routers/course.router');
 
 
 class courseController {
@@ -13,7 +14,7 @@ class courseController {
   async courseAdd(req, res) {
     try {
       //   const newData = new coursemodel.Course({...req.body})
-      new Course.create({ ...req.body })
+      Course.create({ ...req.body })
 
       res.json({ message: "added" });
     }
@@ -31,7 +32,7 @@ class courseController {
 
   async lessonAdd(req, res) {
     try {
-      new Lesson.create({ ...req.body })
+      Lesson.create({ ...req.body })
 
       await Course.findOneAndUpdate(
         { _id: req.body.course }, // Find the course by ID
@@ -44,56 +45,66 @@ class courseController {
     }
   }
 
-  async addMultipleLessons(req, res) {
+  async addMultipleLesson(req,res){ 
+    console.log("inside add Multiple Lesson")
+    const {lessons,course} = req.body
+    lessons.forEach(obj => { 
+      obj.course = course;
+    });    
+    const request  = await Lesson.insertMany(lessons) 
+    console.log("requwst",request)   
+    const Lessons = request.map(obj => obj._id);
+  console.log(Lessons)
+    await Course.findByIdAndUpdate(
+    { _id: course }, // Find the user by ID
+    { $push: {lessons : Lessons  },
+    $set: { updatedOn: Date.now() } }, // Add the new email to the 'emails' array
 
-    try {
-      console.log("inside Multiple Lessons")
-      const request = await Lesson.insertMany(req.body)
-      const Lessons = request.map(obj => obj.id);
-      console.log(Lessons)
-      console.log(request)
-      const result = await Course.findByIdAndUpdate(
-        { _id: request[0].course }, // Find the course by ID
-        { $push: { lessons: Lessons } }) // Add the new email to the 'lessons' array
-      res.json({ status: true, message: "Inserted", result })
+  );
+      // console.log("result",result)
+    res.json({message: 'succesful'})
+  } 
 
+  async updateLesson(req,res){
+    try{
+      console.log("inside update Lesson")
+      const {id} = req.params;
+      const updatedLesson = {...req.body, updatedOn : Date.now()}
+      const updatedDocument = await Lesson.findByIdAndUpdate(id, updatedLesson, {new:true});
+      if(updatedDocument){
+        res.json({message:"updated successfully"})
+      }else{
+        res.status(404).json ({message:"Lesson not found"})
+      }
     }
-    catch (error) {
-      res.status(500).send(error)
-    }
-  }
-
-  async updateLesson(req, res) {
-    try {
-      console.log(req.body)
-      const { title, content, videoUrl } = req.body;
-      const obj = {}
-      if (title) obj.title = title
-      if (content) obj.content = content
-      if (videoUrl) obj.videoUrl = videoUrl
-      await Lesson.findByIdAndUpdate(req.params.id, obj);
-      res.json({ status: true, message: "updated successfully" });
-    } catch (error) {
-      res.status(500).send(error);
+    catch(error){
+      res.status(404).send(error)
     }
   }
 
 
   async getAllLesson(req, res) {
     try {
-      const data = await Lesson.find({ course: req.params.id })
-      res.send({ status: true, data })
+      const Lesson = await Lesson.find({ course: req.params.id })
+      res.send({ status: true, Lesson })
     }
     catch (error) {
-      res.status(500).send(error);
+      res.status(500).send({error : "Lesson Not found"});
     }
 
   }
   async getAllCourses(req, res) {
     try {
-      console.log("inside getallCourses")
-      const data = await Course.find()
-      res.send({ status: true, data })
+    
+    const page = parseInt(req.query.page) || 1;
+    const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
+    const skip = (page - 1) * itemsPerPage;
+    const courses = await Course.find()
+      .skip(skip)
+      .limit(itemsPerPage)
+      .exec();
+      const totalCourses = await Course.countDocuments();
+      res.send({ status: true, courses ,totalCourses })
     }
     catch (error) {
       res.status(500).send(error);
@@ -101,15 +112,13 @@ class courseController {
 
   }
 
-  async getCourse(req, res) {
+  async getCourseById(req, res) {
     try {
-      console.log("inside a course")
-      const data = await Course.findById(req.params.id)
-      console.log("check")
-      res.json({ status: true, data })
+      const course = await Course.findById({_id:req.params.id})
+      res.json({ status: true, course })
     }
     catch (error) {
-      res.status(500).send(error)
+      res.status(500).json({error:"Course Not Found"})
     }
   }
 
@@ -138,14 +147,17 @@ class courseController {
   async deleteLesson(req, res) {
     try {
       console.log("inside delete a lesson")
-      await Lesson.findByIdAndDelete(req.params.id)
+      const lesson = await Lesson.findByIdAndDelete(req.params.id)
+      console.log("vheck",lesson)
       await Course.findByIdAndUpdate(
-        { _id: data.course }, // Find the course by ID
-        { $pull: { lessons: data._id } }) // Add the new email to the 'lessons' array
-      res.json({ status: true, message: "delete successfully" })
+        { _id: lesson.course },
+        { $pull: { lessons: lesson._id },
+        $set: { updatedOn: Date.now() }  },
+      ) 
+      res.json({ status: true, message: "Delete successfully" })
     }
     catch (error) {
-      res.status(500).send(error)
+      res.status(500).send({error:"Delete operation failed"})
     }
   }
 

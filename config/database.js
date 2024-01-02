@@ -16,7 +16,7 @@ const connectDB = async()=>{
     }
 
     catch(err){
-        console.log("Error :", err)
+        console.log("Error in connecting mongoose Db :", err)
     } 
 }
 

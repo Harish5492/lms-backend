@@ -6,3 +6,5 @@ const billingRouter = require('./billing.router')
 const routerIndex = { userRouter, otpRouter, courseRouter, billingRouter }
 
 module.exports = routerIndex
+
+// module.exports= { userRouter, otpRouter, courseRouter, billingRouter }

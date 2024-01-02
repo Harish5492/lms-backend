@@ -22,6 +22,7 @@ const courseSchema = new Schema({
   // instructor: { type: Schema.Types.ObjectId, ref: userModel.userType, required: true },
   lessons: [{ type: Schema.Types.ObjectId, ref: 'Lesson' }],
   studentsEnrolled: [{ type: Schema.Types.ObjectId, ref: userModel }],
+  updatedOn :{type : Date},
 materials: [courseMaterialSchema], // Array of materials with different types
 });
 
@@ -34,6 +35,7 @@ const lessonSchema = new Schema({
   content: { type: String, required: true },
   videoUrl: { type: String },
   course: { type: Schema.Types.ObjectId, ref: 'Course', required: true },
+  updatedOn :{type : Date},
 });
 
 const Lesson = mongoose.model('Lesson', lessonSchema);

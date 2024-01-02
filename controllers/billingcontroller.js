@@ -1,6 +1,5 @@
 // const { Number } = require('twilio/lib/twiml/VoiceResponse');
 const billing = require('../models/billingmodel')
-const userId  = require('../models/model')
 const axios = require('axios');
 const crypto = require('crypto');
 const Helper = require('../helper/index')
@@ -13,8 +12,8 @@ class BillingController {
 
     async billingDetails(req, res) {
         try {
-            const data = await new billing({ ...req.body })
-            await data.save()
+          console.log('inside billingDetails')
+            await billing.create({ ...req.body })
             res.json({ message: "details Added" })
         }
         catch (error) {
@@ -26,24 +25,10 @@ class BillingController {
   async payment(req, res) {
     console.log("inside payment")
     try {
-      console.log("req", req.body)
-      // console.log("req",req)
-      // const b = 'course=234&course=2424&user=234'
       const { totalPrice, queryString, decodedToken } = req.body
-      console.log(req.body)
-      // const {course , user_id} = req.query
-      function generateTransactionId() {
-        const timestamp = new Date().getTime();
-        const random = Math.floor(Math.random() * 10000);
-        return `MT${timestamp}${random}`;
-      }
-      // const queryString = querystring.stringify(req.query);
-      console.log("query", queryString, totalPrice, decodedToken)
       const que = `${queryString}&student=${decodedToken.id}`
-      console.log("que :  ", que)
-      // res.send("done")
-      const ur = 'course=1&course=2&course=3'
-      const merchantTransactionId = generateTransactionId()
+      const merchantTransactionId = paymentHelper.generateTransactionId()
+      console.log("MID",merchantTransactionId)
       const data = {
         merchantId: 'M13OSQIY7Y60',
         merchantUserId: 'MNSDBB1234JVB3',
@@ -57,16 +42,12 @@ class BillingController {
         }
       };
       const payload = JSON.stringify(data);
-      // console.log("payload",payload)
       const payloadMain = Buffer.from(payload).toString('base64');
-      // console.log("base64 payload",payloadMain)
       const keyIndex = 1;
       const key = '2b127c0a-0e65-4954-a2c8-8cb39e47c4dd'
       const string = payloadMain + '/pg/v1/pay' + key;
       const sha256 = crypto.createHash('sha256').update(string).digest('hex');
-      // console.log("sha256",sha256)
       const checksum = sha256 + '###' + keyIndex;
-      // console.log("checksum",checksum)
 
       // const URL = "https://api-preprod.phonepe.com/apis/pg-sandbox/pg/v1/pay"
       const URL = "https://api.phonepe.com/apis/hermes/pg/v1/pay"
@@ -85,7 +66,6 @@ class BillingController {
       };
 
       axios.request(options).then(function (response) {
-        // console.log(response.data)
         console.log(response.data.data.instrumentResponse.redirectInfo.url)
         return res.send(response.data.data.instrumentResponse.redirectInfo.url)
       })

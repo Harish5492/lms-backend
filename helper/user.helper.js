@@ -29,8 +29,6 @@ class UserHelper{
       if (phoneExist) throw "phonNumber already exists"
     }
 
-    async 
-
    
 }
 

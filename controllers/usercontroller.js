@@ -4,7 +4,8 @@ const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const key = process.env.JWTKEY;
-const Helper = require('../helper/index')
+const Helper = require('../helper/index');
+const otpHelper = require('../helper/otp.helper');
 const { OTPHelper, UserHelper } = Helper.module 
 
 
@@ -34,9 +35,11 @@ class UserController {
  **/
   async getUser(req, res) {
     try {
-      if (!req.body.email) throw 'No email Address given'
-      const userData = await model.findOne({ email: req.body.email }, 'username email').exec();
-      if (!userData) throw 'No email Found'
+    
+      const {email} = req.body
+      if (!email) throw {message:'No email address given',status :false}
+      const userData = await model.findOne({ email: email }, 'username email').exec();
+      if (!userData) throw {message:'No email Found',status :false}
       res.json({ userData, status: true });
     } catch (error) {
       res.status(500).send(error);
@@ -53,12 +56,8 @@ class UserController {
     try {
       console.log("inside signUp")
       UserHelper.userCheck(req.body.email, req.body.userName, req.body.phoneNumber)
-
       const password = await UserHelper.encryptPassword(req.body.password);
-      console.log("chchchc")
       const data = new model.create({ ...req.body, password });
-
-
       res.json({ data, status: true });
     } catch (error) {
       res.status(500).send(error);
@@ -203,20 +202,16 @@ class UserController {
 
   async verifyOTP(req, res) {
     try {
-      console.log(req.body)
       const { token, otp } = req.body
+      if (!token || !otp) throw { message: 'Token or OTP missing',status :false };
+
       let decryptedData = OTPHelper.decryptOtpToken(token)
       const { email, exp } = decryptedData
-      const isEmailExist = await otpmodel.findOne({ email });
-      if (!isEmailExist) throw "Email not exist";
-      const OTP = await bcrypt.compare(otp, isEmailExist.otp);
-      if (!OTP) throw "invalid Otp";
-      if (new Date() > new Date(exp)) throw "OTP expired";
-      let currentTime = new Date();
-      currentTime.setMinutes(currentTime.getMinutes() + 1);
+
+      await otpHelper.validateOtpData(otp,email,exp)
+      const currentTime = otpHelper.getCurrentTime()
       const encData = { email: email, exp: currentTime }
       const Token = OTPHelper.verifytoken(encData)
-      console.log("afterToken")
       res.json({ message: 'verified', Token })
     }
     catch (error) {
@@ -249,13 +244,16 @@ class UserController {
  **/
   async login(req, res) {
     try {
-      console.log('aap login API main pravesh kr chuke hain');
-      if (!req.body.usernameOrEmail || !req.body.password)
+      console.log('Login API main has been accesed');
+      const {usernameOrEmail,password} = req.body
+
+      if (!usernameOrEmail || !password)
       throw { message: 'Email/UserName & password required' };
-      const source = OTPHelper.checkSource(req.body.usernameOrEmail);
-      const user = await model.findOne({ [source]: req.body.usernameOrEmail });
-      const pass = await bcrypt.compare(req.body.password, user.password);
-      if (!pass) throw { message: 'Invalid Login Credentials', status: false };
+      const source = OTPHelper.checkSource(usernameOrEmail);
+      const user = await model.findOne({ [source]: usernameOrEmail });
+       if (!user || !(await bcrypt.compare(password, user.password))) {
+        throw { message: 'Invalid Login Credentials', status: false };
+      }
       const token = jwt.sign({ email: user.email, id: user._id, role: user.role }, key, { expiresIn: '3h' });
       return res.send({ token, status: true });
     } catch (error) {
@@ -272,7 +270,7 @@ class UserController {
  **/
   async profile(req, res) {
     try {
-      console.log('req.body : ', req.body);
+      // console.log('req.body : ', req.body);
       const userData = await model
         .findOne({ email: req.body.email }, 'name email')
         .exec();

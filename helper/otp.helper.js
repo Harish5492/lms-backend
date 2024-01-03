@@ -1,5 +1,6 @@
 const bcrypt = require('bcrypt');
 const model = require('../models/model');
+const otpmodel = require('../models/otpmodel')
 require('dotenv').config();
 const accountSid = process.env.accountSid;
 const authToken = process.env.authToken;
@@ -50,10 +51,10 @@ class OtpHelper {
   
     let bytes = CryptoJS.AES.decrypt(token, OTPKEY);
     let check = (bytes.toString(CryptoJS.enc.Utf8));
-    console.log("CHECK IS",check)
-    if(!check) throw "invalid token"
+    // console.log("CHECK IS",check)
+    if(!check) throw { message:"invalid token",status:false}
     let decryptedData = JSON.parse(check)
-    console.log("DATA IS ",decryptedData)
+    // console.log("DATA IS ",decryptedData)
     return decryptedData
   } 
    verifydecryptOtpToken(token){
@@ -91,6 +92,21 @@ class OtpHelper {
       html: `<strong>Your OTP is ${otp} Please Use it carefully</strong>`,
     }
     await sgMail.send(msg);
+  }
+
+  
+  async validateOtpData(otp,email,exp){
+    const isEmailExist = await otpmodel.findOne({ email });
+    if (!isEmailExist) throw {message: "Email not exist",status:false};
+    const OTP = await bcrypt.compare(otp, isEmailExist.otp);
+    if (!OTP) throw { message : "invalid Otp",status:false};
+    if (new Date() > new Date(exp)) throw {message:"OTP expired",status:false};
+  }
+
+  getCurrentTime(){
+    let currentTime = new Date();
+      currentTime.setMinutes(currentTime.getMinutes() + 1);
+      return currentTime;
   }
 
 }

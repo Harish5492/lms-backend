@@ -1,9 +1,12 @@
 // const { Number } = require('twilio/lib/twiml/VoiceResponse');
 const billing = require('../models/billingmodel')
+const payment = require('../models/payment.model')
 const axios = require('axios');
 const Helper = require('../helper/index')
 const { paymentHelper } = Helper.module
 require("dotenv").config();
+const paymentMerchantId = process.env.MERCHANTID
+console.log(paymentMerchantId)
 
 
 class BillingController {
@@ -19,18 +22,51 @@ class BillingController {
     }
   }
 
+  async getDetails(req, res) {
+    try {
+      console.log("inside get payment Details")
+
+      const page = parseInt(req.query.page) || 1;
+      const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
+      const skip = (page - 1) * itemsPerPage;
+      const details = await payment.find()
+        .skip(skip)
+        .limit(itemsPerPage)
+        .exec();
+      const totalRecords = await payment.countDocuments();
+      res.json({ status: true, details, totalRecords })
+    }
+    catch (error) {
+      res.status(500).json({
+        message: error.message,
+        success: false
+      })
+    }
+  }
+
 
   async payment(req, res) {
     console.log("inside payment")
     try {
       const { totalPrice, queryString, decodedToken } = req.body
-      const que = `${queryString}&student=${decodedToken.id}`
+      const  student  = decodedToken.id
+      const que = `${queryString}&student=${student}`
+
       const merchantTransactionId = paymentHelper.generateTransactionId()
       const data = paymentHelper.getData(merchantTransactionId, totalPrice, que)
       const { checksum, payloadMain } = paymentHelper.hashing(data)
       const options = paymentHelper.getOptions(checksum, payloadMain)
       axios.request(options).then(function (response) {
         console.log(response.data.data.instrumentResponse.redirectInfo.url)
+
+        const paymentDetail = {
+          user: student,
+          merchantTransactionId: merchantTransactionId,
+          amount: totalPrice,
+        }
+        console.log(paymentDetail)
+        paymentHelper.addPayment(paymentDetail)
+
         return res.send(response.data.data.instrumentResponse.redirectInfo.url)
       })
         .catch(function (error) {
@@ -51,13 +87,17 @@ class BillingController {
     console.log("query", req.query)
     const { course, student } = req.query
     const merchantTransactionId = req.params['txnId']
+    console.log(merchantTransactionId)
     const merchantId = paymentMerchantId
-    const { checksum } = paymentHelper.hashing()
-    const options = paymentHelper.getCheckOptions(merchantId,merchantTransactionId,checksum)
+    const { checksum } = paymentHelper.checkHashing(merchantTransactionId)
+    console.log(checksum)
+    const options = paymentHelper.getCheckOptions(merchantId, merchantTransactionId, checksum)
+console.log(options)
     axios.request(options).then(async (response) => {
- 
+console.log("inside")
       if (response.data.success === true) {
         console.log(response.data)///
+        paymentHelper.updateStatus(merchantTransactionId, "Success")
         paymentHelper.addCourse(student, course)
 
         return res.status(200).send({ success: true, message: "Payment Success" });

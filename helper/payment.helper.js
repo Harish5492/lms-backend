@@ -1,4 +1,6 @@
 const user = require('../models/model');
+
+const payment = require('../models/payment.model')
 const crypto = require('crypto');
 require('dotenv').config();
 const paymentKeyIndex = process.env.PAYMENTKEYINDEX;
@@ -41,6 +43,15 @@ class paymentHelper {
     return { checksum, payloadMain };
 
   }
+ checkHashing(merchantTransactionId) {
+    const keyIndex = paymentKeyIndex;
+    const key = paymentKey;
+    const string = `/pg/v1/status/${paymentMerchantId}/${merchantTransactionId}`+ key;
+    const sha256 = crypto.createHash('sha256').update(string).digest('hex');
+    const checksum = sha256 + '###' + keyIndex;
+    return { checksum };
+
+  }
 
   getData(merchantTransactionId, totalPrice, que) {
     const data = {
@@ -48,7 +59,7 @@ class paymentHelper {
       merchantUserId: paymentMerchantUserId,
       merchantTransactionId: merchantTransactionId,
       amount: totalPrice,
-      redirectUrl: `http://10.10.2.82:8000/user/payment/checkStatus/${merchantTransactionId}?${que}`,
+      redirectUrl: `http://10.10.2.82:3000/user/payment/checkStatus/${merchantTransactionId}?${que}`,
       // redirectUrl: `http://10.10.2.82:8000/user/payment/checkStatus/${merchantTransactionId}?${ur}`,
       redirectMode: 'REDIRECT',
       paymentInstrument: {
@@ -89,9 +100,24 @@ class paymentHelper {
     return options
 
   }
+  async addPayment(paymentDetail){
+    console.log("inside addPayment")
+    console.log(paymentDetail)
+    const obj = paymentDetail
+    console.log("obj",obj)
+    await payment.create(obj )
+    console.log ("payment Added Successfully")
+    }
 
-}
-
+  async updateStatus(merchantTransactionId,status){
+    console.log("inside updateStatus")
+    await payment.findOneAndUpdate(
+      {merchantTransactionId:merchantTransactionId},
+      {status:status}
+     )
+    console.log ("payment Added Successfully")
+    }
+  }
 
 
 

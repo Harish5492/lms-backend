@@ -12,5 +12,6 @@ userRouter.delete('/removeUser/:id', userController.removeUser);
 userRouter.put('/forgotPassword/:email', validateSignup[4], validateSignup[5], handleValidationErrors, userController.forgotPassword);
 userRouter.get('/profile', authMiddleware, userController.profile);
 
+userRouter.post('/changePassword',validateSignup[5],validateSignup[6],handleValidationErrors,userController.updatePassword); 
 
 module.exports = userRouter;

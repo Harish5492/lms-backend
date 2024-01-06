@@ -7,7 +7,7 @@ const key = process.env.JWTKEY;
 const Helper = require('../helper/index');
 const otpHelper = require('../helper/otp.helper');
 const { OTPHelper, UserHelper } = Helper.module 
-
+ 
 
 class UserController {
 
@@ -19,8 +19,16 @@ class UserController {
 **/
   async getAllUsers(req, res) {
     try {
-      const users = await model.find();
-      res.json(users);
+      const page = parseInt(req.query.page) || 1;
+    const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
+    const skip = (page - 1) * itemsPerPage;
+
+      const users = await model.find()
+      .skip(skip)
+      .limit(itemsPerPage)
+      .exec();
+      const totalCourses = await model.countDocuments();
+      res.json({status: true,users,totalCourses});
     } catch (error) {
       res.status(500).send(error);
 
@@ -57,7 +65,7 @@ class UserController {
       console.log("inside signUp")
       UserHelper.userCheck(req.body.email, req.body.userName, req.body.phoneNumber)
       const password = await UserHelper.encryptPassword(req.body.password);
-      const data = model.create({ ...req.body, password });
+      const data = new model.create({ ...req.body, password });
       res.json({ data, status: true });
     } catch (error) {
       res.status(500).send(error);

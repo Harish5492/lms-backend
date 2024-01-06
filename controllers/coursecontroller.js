@@ -11,7 +11,7 @@ class courseController {
   * @param  res 
   * @returns users
   **/
-  async courseAdd(req, res) {
+  async addCourse(req, res) {
     try {
       //   const newData = new coursemodel.Course({...req.body})
       Course.create({ ...req.body })
@@ -30,7 +30,7 @@ class courseController {
 * @returns users
 **/
 
-  async lessonAdd(req, res) {
+  async addLesson(req, res) {
     try {
       Lesson.create({ ...req.body })
 
@@ -65,6 +65,25 @@ class courseController {
     res.json({message: 'succesful'})
   } 
 
+
+  async updateCourse(req,res){
+    try {
+      console.log("update Course",req.params)
+      const obj = req.body;
+      console.log("obj",obj)
+      // const obj1 = {...obj,title:"qweeeeerttttttttygvvvvvvvvvv",another:"antohr"}
+  // console.log(obj1)
+      // const obj = {}  
+      // if (title) obj.title = title
+      // if (content) obj.content = content 
+      // if (videoUrl) obj.videoUrl = videoUrl
+      await Course.findByIdAndUpdate( req.params.id, obj,{updatedOn : Date.now()} );
+      res.json({ message: "updated successfully" });
+    } catch (error) {
+      res.status(500).send(error);
+    }
+  }
+
   async updateLesson(req,res){
     try{
       console.log("inside update Lesson")
@@ -96,6 +115,7 @@ class courseController {
   async getAllCourses(req, res) {
     try {
     
+      console.log("getAllCourses API has been accessed")
     const page = parseInt(req.query.page) || 1;
     const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
     const skip = (page - 1) * itemsPerPage;
@@ -114,6 +134,7 @@ class courseController {
 
   async getCourseById(req, res) {
     try {
+      console.log("inside getcourse API",req.params.id)
       const course = await Course.findById({_id:req.params.id})
       res.json({ status: true, course })
     }

@@ -1,6 +1,6 @@
 const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
-const userModel = require('./model')
+// const userModel = require('./model')
 
 const courseMaterialSchema = new Schema({
   video: { type: Boolean, required: true }, // e.g., 'video', 'pdf', etc.
@@ -21,7 +21,7 @@ const courseSchema = new Schema({
   duration : { type: String, required: true },
   // instructor: { type: Schema.Types.ObjectId, ref: userModel.userType, required: true },
   lessons: [{ type: Schema.Types.ObjectId, ref: 'Lesson' }],
-  studentsEnrolled: [{ type: Schema.Types.ObjectId, ref: userModel }],
+  studentsEnrolled: [{ type: Schema.Types.ObjectId, ref: 'user' }],
   updatedOn :{type : Date},
 materials: [courseMaterialSchema], // Array of materials with different types
 });

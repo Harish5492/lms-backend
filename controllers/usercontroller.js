@@ -57,7 +57,7 @@ class UserController {
       console.log("inside signUp")
       UserHelper.userCheck(req.body.email, req.body.userName, req.body.phoneNumber)
       const password = await UserHelper.encryptPassword(req.body.password);
-      const data = new model.create({ ...req.body, password });
+      const data = model.create({ ...req.body, password });
       res.json({ data, status: true });
     } catch (error) {
       res.status(500).send(error);

@@ -4,7 +4,7 @@ const axios = require('axios');
 const Helper = require('../helper/index')
 const { paymentHelper } = Helper.module
 require("dotenv").config();
-const paymentMerchantId = process.env.MERCHANTID
+
 
 class BillingController {
 

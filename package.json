@@ -26,7 +26,8 @@
     "node-fetch": "^3.3.2",
     "nodemon": "^2.0.12",
     "sendgrid": "^5.2.3",
-    "twilio": "^4.19.3"
+    "twilio": "^4.19.3",
+    "ws": "^8.16.0"
   },
   "description": "web2"
 }

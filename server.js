@@ -18,6 +18,7 @@ app.use('/user', Api.userRouter);
 app.use('/user', Api.otpRouter); 
 app.use('/user', Api.billingRouter); 
 app.use('/user', Api.courseRouter); 
+app.use('/user', Api.referalRouter); 
 
 // listening port
 

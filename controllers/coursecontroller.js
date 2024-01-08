@@ -104,8 +104,11 @@ class courseController {
 
   async getAllLesson(req, res) {
     try {
-      const Lesson = await Lesson.find({ course: req.params.id })
-      res.send({ status: true, Lesson })
+      console.log("inside All Lesson",req.params.id)
+      const lesson = await Lesson.find({ course: req.params.id })
+      if(!lesson) throw  "No Lesson found"
+      console.log(lesson)
+      res.send({ status: true, lesson })
     }
     catch (error) {
       res.status(500).send({error : "Lesson Not found"});
@@ -117,14 +120,14 @@ class courseController {
     
       console.log("getAllCourses API has been accessed")
     const page = parseInt(req.query.page) || 1;
-    const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
+    const itemsPerPage = parseInt(req.query.itemsPerPage) || 12;
     const skip = (page - 1) * itemsPerPage;
     const courses = await Course.find()
       .skip(skip)
       .limit(itemsPerPage)
       .exec();
       const totalCourses = await Course.countDocuments();
-      res.send({ status: true, courses ,totalCourses })
+      res.send({ status: true, courses ,totalCourses , itemsPerPage })
     }
     catch (error) {
       res.status(500).send(error);
@@ -136,6 +139,7 @@ class courseController {
     try {
       console.log("inside getcourse API",req.params.id)
       const course = await Course.findById({_id:req.params.id})
+      console.log(course)
       res.json({ status: true, course })
     }
     catch (error) {

@@ -12,9 +12,9 @@ userRouter.delete('/removeUser/:id', userController.removeUser);
 userRouter.put('/forgotPassword/:email', validateSignup[4], validateSignup[5], handleValidationErrors, userController.forgotPassword);
 userRouter.get('/profile', authMiddleware, userController.profile);
 
+
 userRouter.post('/changePassword',validateSignup[5],validateSignup[6],handleValidationErrors,userController.updatePassword); 
 userRouter.get('/getUserbyID/:id', userController.getUserbyID);
 userRouter.get('/myCourses',authMiddleware,userController.myCourses);
-userRouter.get('/referalCode',authMiddleware,userController.referalCode)
 
 module.exports = userRouter;    

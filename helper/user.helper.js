@@ -41,6 +41,16 @@ class UserHelper{
       return code;
     }
 
+    errorCheckCode(code){
+      if(!code) throw {message: "No Code Given",status:false} 
+    }
+
+    errorCheckValidCode(findCode){
+      console.log("findCode",findCode)
+      if(!findCode) throw {message: "Code Not Match",status:false}
+      if(findCode.expiresAt < new Date) throw {message: "Code Expired",status:false}
+    }
+
    
 }
 

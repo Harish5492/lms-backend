@@ -1,6 +1,5 @@
 const model = require('../models/model');
 const otpmodel = require('../models/otpmodel')
-const referalCode = require('../models/referralmodel')
 const { Course, Lesson } = require('../models/coursemodel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
@@ -272,37 +271,37 @@ class UserController {
   }
 
 
-  /**
- * @function profile
- * @param  req 
- * @param  res 
- * @returns userData
- **/
-  async profile(req, res) {
-    try {
-      // console.log('req.body : ', req.body);
-      const userData = await model
-        .findOne({ email: req.body.email }, 'name email')
-        .exec();
-      res.json({ message: 'verification succesful', userData });
-    } catch (error) {
-      res.status(500).send(error);
-    }
-  }
+//   /**
+//  * @function profile
+//  * @param  req 
+//  * @param  res 
+//  * @returns userData
+//  **/
+//   async profile(req, res) {
+//     try {
+//       // console.log('req.body : ', req.body);
+//       const userData = await model
+//         .findOne({ email: req.body.email }, 'name email')
+//         .exec();
+//       res.json({ message: 'verification succesful', userData });
+//     } catch (error) {
+//       res.status(500).send(error);
+//     }
+//   }
   async myCourses(req, res) {
     try {
-      console.log("inside myCourses", req.body);
+      console.log("inside myCourses");
       const { decodedToken } = req.body;
-      console.log("id", decodedToken.id);
+      // console.log("id", decodedToken.id);
       const courses = await model.findOne({ _id: decodedToken.id }, 'courseEnrolled');
-      console.log("Courses", courses);
+      // console.log("Courses", courses);
       const myCourses = []; 
       for (const data of courses.courseEnrolled) {
         const Allcourse = await Course.findById({ _id: data });
         // console.log(Allcourse);
         myCourses.push(Allcourse);
       }
-      console.log("asdfghjkl;kjhgfdrtfgyhuiytryu",myCourses);
+      // console.log("asdfghjkl;kjhgfdrtfgyhuiytryu",myCourses);
       res.json({ message: "Your courses are :- ", myCourses, status: true });
     } catch (error) {
       res.status(404).json(error.message);
@@ -323,19 +322,29 @@ class UserController {
     }
   }
 
-async  referalCode(req, res) {
+  /**
+ * @function profile
+ * @param  req 
+ * @param  res 
+ * @returns userData
+//  **/
+async profile(req, res) {
   try {
+    console.log("inside profile")
     const { decodedToken } = req.body;
-    const referrelOwner = decodedToken.id;
-    const referrelCode = UserHelper.generateAlphanumericCode();
-    await referalCode.create({ referrelOwner, referrelCode });
-   res.json({ message: "Code generated Successfully", status: true , referrelCode});
+    console.log("id", decodedToken.id);
+    if (!decodedToken.id) throw { message: 'No user Found', status: false }
+    const userData = await model
+    .findOne({ _id: decodedToken.id })
+    .select('firstName lastName email userName phoneNumber created_on courseEnrolled')
+    .exec();
+    const length = userData.courseEnrolled.length
+    if (!userData) throw { message: 'No email Found', status: false}
+    res.json({ userData,length, status: true });
   } catch (error) {
-    console.error(error);
-    res.status(500).send(error.message || "Internal Server Error");
+    res.status(500).send(error);
   }
 }
-
 
 
 

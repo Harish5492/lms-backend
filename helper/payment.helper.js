@@ -15,8 +15,7 @@ class paymentHelper {
     console.log("inside addCourse")
     const result1 = await user.findByIdAndUpdate(
       { _id: student },
-      {
-        $push: { courseEnrolled: coursesArray }
+      {  $push: { courseEnrolled: coursesArray }
       },
       { new: true }
     )

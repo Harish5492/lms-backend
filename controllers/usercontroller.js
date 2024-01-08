@@ -1,13 +1,15 @@
 const model = require('../models/model');
 const otpmodel = require('../models/otpmodel')
+const referalCode = require('../models/referralmodel')
+const { Course, Lesson } = require('../models/coursemodel');
 const bcrypt = require('bcrypt');
 const jwt = require('jsonwebtoken');
 require('dotenv').config();
 const key = process.env.JWTKEY;
 const Helper = require('../helper/index');
 const otpHelper = require('../helper/otp.helper');
-const { OTPHelper, UserHelper } = Helper.module 
- 
+const { OTPHelper, UserHelper } = Helper.module
+
 
 class UserController {
 
@@ -20,15 +22,15 @@ class UserController {
   async getAllUsers(req, res) {
     try {
       const page = parseInt(req.query.page) || 1;
-    const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
-    const skip = (page - 1) * itemsPerPage;
+      const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
+      const skip = (page - 1) * itemsPerPage;
 
       const users = await model.find()
-      .skip(skip)
-      .limit(itemsPerPage)
-      .exec();
+        .skip(skip)
+        .limit(itemsPerPage)
+        .exec();
       const totalCourses = await model.countDocuments();
-      res.json({status: true,users,totalCourses});
+      res.json({ status: true, users, totalCourses });
     } catch (error) {
       res.status(500).send(error);
 
@@ -43,11 +45,11 @@ class UserController {
  **/
   async getUser(req, res) {
     try {
-    
-      const {email} = req.body
-      if (!email) throw {message:'No email address given',status :false}
+
+      const { email } = req.body
+      if (!email) throw { message: 'No email address given', status: false }
       const userData = await model.findOne({ email: email }, 'username email').exec();
-      if (!userData) throw {message:'No email Found',status :false}
+      if (!userData) throw { message: 'No email Found', status: false }
       res.json({ userData, status: true });
     } catch (error) {
       res.status(500).send(error);
@@ -62,13 +64,13 @@ class UserController {
    **/
   async signUp(req, res) {
     try {
-      console.log("inside signUp")
+      console.log("inside signUp", req.body)
       UserHelper.userCheck(req.body.email, req.body.userName, req.body.phoneNumber)
       const password = await UserHelper.encryptPassword(req.body.password);
-      const data = new model.create({ ...req.body, password });
+      const data = await model.create({ ...req.body, password });
       res.json({ data, status: true });
     } catch (error) {
-      res.status(500).send(error);
+      res.status(500).send(error.message);
     }
   }
 
@@ -211,12 +213,12 @@ class UserController {
   async verifyOTP(req, res) {
     try {
       const { token, otp } = req.body
-      if (!token || !otp) throw { message: 'Token or OTP missing',status :false };
+      if (!token || !otp) throw { message: 'Token or OTP missing', status: false };
 
       let decryptedData = OTPHelper.decryptOtpToken(token)
       const { email, exp } = decryptedData
 
-      await otpHelper.validateOtpData(otp,email,exp)
+      await otpHelper.validateOtpData(otp, email, exp)
       const currentTime = otpHelper.getCurrentTime()
       const encData = { email: email, exp: currentTime }
       const Token = OTPHelper.verifytoken(encData)
@@ -253,13 +255,13 @@ class UserController {
   async login(req, res) {
     try {
       console.log('Login API main has been accesed');
-      const {usernameOrEmail,password} = req.body
+      const { usernameOrEmail, password } = req.body
 
       if (!usernameOrEmail || !password)
-      throw { message: 'Email/UserName & password required' };
+        throw { message: 'Email/UserName & password required' };
       const source = OTPHelper.checkSource(usernameOrEmail);
       const user = await model.findOne({ [source]: usernameOrEmail });
-       if (!user || !(await bcrypt.compare(password, user.password))) {
+      if (!user || !(await bcrypt.compare(password, user.password))) {
         throw { message: 'Invalid Login Credentials', status: false };
       }
       const token = jwt.sign({ email: user.email, id: user._id, role: user.role }, key, { expiresIn: '3h' });
@@ -287,6 +289,56 @@ class UserController {
       res.status(500).send(error);
     }
   }
+  async myCourses(req, res) {
+    try {
+      console.log("inside myCourses", req.body);
+      const { decodedToken } = req.body;
+      console.log("id", decodedToken.id);
+      const courses = await model.findOne({ _id: decodedToken.id }, 'courseEnrolled');
+      console.log("Courses", courses);
+      const myCourses = []; 
+      for (const data of courses.courseEnrolled) {
+        const Allcourse = await Course.findById({ _id: data });
+        // console.log(Allcourse);
+        myCourses.push(Allcourse);
+      }
+      console.log("asdfghjkl;kjhgfdrtfgyhuiytryu",myCourses);
+      res.json({ message: "Your courses are :- ", myCourses, status: true });
+    } catch (error) {
+      res.status(404).json(error.message);
+    }
+  }
+
+  async getUserbyID(req, res) {
+    try {
+      console.log("inside getuserbyID", req.params)
+      const { id } = req.params
+      if (!id) throw { message: 'No id given', status: false }
+      const userData = await model.findOne({ _id: id }, 'userName email firstName lastName').exec();
+      if (!userData) throw { message: 'No user Found', status: false }
+
+      res.json({ userData, status: true });
+    } catch (error) {
+      res.status(500).send(error);
+    }
+  }
+
+async  referalCode(req, res) {
+  try {
+    const { decodedToken } = req.body;
+    const referrelOwner = decodedToken.id;
+    const referrelCode = UserHelper.generateAlphanumericCode();
+    await referalCode.create({ referrelOwner, referrelCode });
+   res.json({ message: "Code generated Successfully", status: true , referrelCode});
+  } catch (error) {
+    console.error(error);
+    res.status(500).send(error.message || "Internal Server Error");
+  }
+}
+
+
+
+
 
 }
 

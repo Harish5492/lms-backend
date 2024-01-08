@@ -14,7 +14,7 @@ class courseController {
   async addCourse(req, res) {
     try {
       //   const newData = new coursemodel.Course({...req.body})
-      Course.create({ ...req.body })
+      await Course.create({ ...req.body })
 
       res.json({ message: "added" });
     }
@@ -32,7 +32,7 @@ class courseController {
 
   async addLesson(req, res) {
     try {
-      Lesson.create({ ...req.body })
+      await Lesson.create({ ...req.body })
 
       await Course.findOneAndUpdate(
         { _id: req.body.course }, // Find the course by ID

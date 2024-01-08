@@ -6,7 +6,6 @@ const Helper = require('../helper/index')
 const { paymentHelper } = Helper.module
 require("dotenv").config();
 const paymentMerchantId = process.env.MERCHANTID
-console.log(paymentMerchantId)
 
 
 class BillingController {
@@ -48,10 +47,22 @@ class BillingController {
   async payment(req, res) {
     console.log("inside payment")
     try {
-      const { totalPrice, queryString, decodedToken } = req.body
-      const  student  = decodedToken.id
-      const que = `${queryString}&student=${student}`
 
+      const { totalPrice, queryString, decodedToken } = req.body
+      const  student  = decodedToken.id   
+      // const courseId = req.query.courseId;
+      // console.log(courseId)
+
+      // // Check if the user is already enrolled in the course
+      // const user = await model.findOne({ _id: student, courseEnrolled: courseId });
+      // if (user) {
+      //   return res.status(400).send({
+      //     message: "Course is already enrolled. Payment cannot be initiated.",
+      //     success: false,
+      //   });
+      // }
+    
+      const que = `${queryString}&student=${student}`
       const merchantTransactionId = paymentHelper.generateTransactionId()
       const data = paymentHelper.getData(merchantTransactionId, totalPrice, que)
       const { checksum, payloadMain } = paymentHelper.hashing(data)
@@ -87,7 +98,6 @@ class BillingController {
     console.log("query", req.query)
     const { course, student } = req.query
     const merchantTransactionId = req.params['txnId']
-    console.log(merchantTransactionId)
     const merchantId = paymentMerchantId
     const { checksum } = paymentHelper.checkHashing(merchantTransactionId)
     console.log(checksum)
@@ -95,7 +105,7 @@ class BillingController {
 console.log(options)
     axios.request(options).then(async (response) => {
 console.log("inside")
-      if (response.data.success === true) {
+      if (response.data.success === true && response.data.code != "PAYMENT_PENDING" ) {
         console.log(response.data)///
         paymentHelper.updateStatus(merchantTransactionId, "Success")
         paymentHelper.addCourse(student, course)

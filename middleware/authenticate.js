@@ -18,6 +18,7 @@ module.exports = function (req, res, next) {
     const decodedToken = jwt.decode(authHeader, key)
     console.log(decodedToken)
     req.body.decodedToken = decodedToken
+    if(!decodedToken) throw "not having token please login"
     next()
     }
     catch(err) {

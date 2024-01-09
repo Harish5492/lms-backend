@@ -10,4 +10,7 @@ billingRouter.get('/payment/getDetails',billingController.getDetails)
 billingRouter.post('/payment',authMiddleware,billingController.payment)
 billingRouter.get('/payment/checkStatus/:txnId',billingController.checkStatus)
 
+billingRouter.delete('/deleteMany/:id',billingController.deleteMany)
+
+
 module.exports = billingRouter;

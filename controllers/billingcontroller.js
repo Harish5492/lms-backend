@@ -74,6 +74,7 @@ class BillingController {
           user: student,
           merchantTransactionId: merchantTransactionId,
           amount: totalPrice,
+          email : decodedToken.email
         }
         console.log(paymentDetail)
         paymentHelper.addPayment(paymentDetail)
@@ -111,8 +112,12 @@ console.log("inside")
         paymentHelper.addCourse(student, course)
 
         return res.status(200).send({ success: true, message: "Payment Success" });
-      } else {
+      } else if (response.data.success === false && response.data.code != "PAYMENT_PENDING" ){
+        paymentHelper.updateStatus(merchantTransactionId, "Failure")
         return res.status(400).send({ success: false, message: "Payment Failure" });
+      }
+      else {
+        return res.status(400).send({ success: false, message: "Payment Pending" });
       }
     })
       .catch((err) => {
@@ -121,6 +126,27 @@ console.log("inside")
       });
 
   };
+
+  async deleteMany(req, res) {
+    try {
+      console.log("inside delete")
+      console.log(req.params.id)
+     
+      const del = await payment.deleteMany({ user: req.params.id }, (error, result) => {
+        if (error) {
+          console.error(error);
+        } else {
+          console.log(`${result.deletedCount} documents deleted`);
+        }
+      }
+      )
+      // console.log(del)
+      res.send({ status: true ,del})
+    }
+    catch (error) {
+      res.status(500).send(error)
+    }
+  }
 
 
 };

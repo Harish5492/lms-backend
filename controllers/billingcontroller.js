@@ -7,7 +7,6 @@ const { paymentHelper } = Helper.module
 require("dotenv").config();
 const paymentMerchantId = process.env.MERCHANTID
 
-
 class BillingController {
 
   async billingDetails(req, res) {
@@ -61,6 +60,11 @@ class BillingController {
       //     success: false,
       //   });
       // }
+
+      const queryParams = queryString.split('&');
+const productIds = queryParams.map(param => {
+  const [, productId] = param.split('='); // Using destructuring to get the second part after '='
+  return productId })
     
       const que = `${queryString}&student=${student}`
       const merchantTransactionId = paymentHelper.generateTransactionId()
@@ -74,7 +78,8 @@ class BillingController {
           user: student,
           merchantTransactionId: merchantTransactionId,
           amount: totalPrice,
-          email : decodedToken.email
+          email : decodedToken.email,
+          courseBought : productIds
         }
         console.log(paymentDetail)
         paymentHelper.addPayment(paymentDetail)
@@ -86,7 +91,7 @@ class BillingController {
           throw error;
         });
 
-    } catch (error) {
+    }catch (error) {
       res.status(500).send({
         message: error.message,
         success: false
@@ -147,9 +152,6 @@ console.log("inside")
       res.status(500).send(error)
     }
   }
-
-
 };
-
 
 module.exports = new BillingController();

@@ -20,6 +20,16 @@ app.use('/user', Api.billingRouter);
 app.use('/user', Api.courseRouter); 
 app.use('/user', Api.referalRouter); 
 
+// const cron = require('node-cron');
+// function logMessage() {
+//  console.log('Cron job executed at:', new Date().toLocaleString());
+// }
+// // Schedule the cron job to run every minute
+// cron.schedule('* * * * * *', () => {
+//  logMessage();
+// });
+
+
 // listening port
 
 app.listen(port, (err) => {

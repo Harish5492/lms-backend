@@ -19,6 +19,7 @@ app.use('/user', Api.otpRouter);
 app.use('/user', Api.billingRouter); 
 app.use('/user', Api.courseRouter); 
 app.use('/user', Api.referalRouter); 
+app.use('/user', Api.affiliateRouter); 
 
 // const cron = require('node-cron');
 // function logMessage() {

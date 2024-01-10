@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const model = require('../models/model');
+const model = require('../models/usermodel');
 
 class UserHelper{
 
@@ -47,7 +47,7 @@ class UserHelper{
 
     errorCheckValidCode(findCode){
       console.log("findCode",findCode)
-      if(!findCode) throw {message: "Code Not Match",status:false}
+      if(!findCode) throw {message: "Invalid Code",status:false}
       if(findCode.expiresAt < new Date) throw {message: "Code Expired",status:false}
     }
 

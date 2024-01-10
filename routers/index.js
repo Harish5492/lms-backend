@@ -4,7 +4,8 @@ const otpRouter = require('./otp.router')
 const courseRouter = require('./course.router')
 const billingRouter = require('./billing.router')
 const referalRouter = require('./refferal.router')
-const routerIndex = { userRouter, otpRouter, courseRouter, billingRouter ,referalRouter }
+const affiliateRouter = require('./affiliate.router')
+const routerIndex = { userRouter, otpRouter, courseRouter, billingRouter ,referalRouter ,affiliateRouter }
 
 module.exports = routerIndex
 

@@ -48,7 +48,7 @@ class BillingController {
     try {
 
       const { totalPrice, queryString, decodedToken } = req.body
-      const  student  = decodedToken.id   
+      const student = decodedToken.id
       // const courseId = req.query.courseId;
       // console.log(courseId)
 
@@ -62,10 +62,11 @@ class BillingController {
       // }
 
       const queryParams = queryString.split('&');
-const productIds = queryParams.map(param => {
-  const [, productId] = param.split('='); // Using destructuring to get the second part after '='
-  return productId })
-    
+      const productIds = queryParams.map(param => {
+        const [, productId] = param.split('='); // Using destructuring to get the second part after '='
+        return productId
+      })
+
       const que = `${queryString}&student=${student}`
       const merchantTransactionId = paymentHelper.generateTransactionId()
       const data = paymentHelper.getData(merchantTransactionId, totalPrice, que)
@@ -78,8 +79,8 @@ const productIds = queryParams.map(param => {
           user: student,
           merchantTransactionId: merchantTransactionId,
           amount: totalPrice,
-          email : decodedToken.email,
-          courseBought : productIds
+          email: decodedToken.email,
+          courseBought: productIds
         }
         console.log(paymentDetail)
         paymentHelper.addPayment(paymentDetail)
@@ -91,7 +92,7 @@ const productIds = queryParams.map(param => {
           throw error;
         });
 
-    }catch (error) {
+    } catch (error) {
       res.status(500).send({
         message: error.message,
         success: false
@@ -108,16 +109,16 @@ const productIds = queryParams.map(param => {
     const { checksum } = paymentHelper.checkHashing(merchantTransactionId)
     console.log(checksum)
     const options = paymentHelper.getCheckOptions(merchantId, merchantTransactionId, checksum)
-console.log(options)
+    console.log(options)
     axios.request(options).then(async (response) => {
-console.log("inside")
-      if (response.data.success === true && response.data.code != "PAYMENT_PENDING" ) {
+      console.log("inside")
+      if (response.data.success === true && response.data.code != "PAYMENT_PENDING") {
         console.log(response.data)///
         paymentHelper.updateStatus(merchantTransactionId, "Success")
         paymentHelper.addCourse(student, course)
 
         return res.status(200).send({ success: true, message: "Payment Success" });
-      } else if (response.data.success === false && response.data.code != "PAYMENT_PENDING" ){
+      } else if (response.data.success === false && response.data.code != "PAYMENT_PENDING") {
         paymentHelper.updateStatus(merchantTransactionId, "Failure")
         return res.status(400).send({ success: false, message: "Payment Failure" });
       }
@@ -136,7 +137,7 @@ console.log("inside")
     try {
       console.log("inside delete")
       console.log(req.params.id)
-     
+
       const del = await payment.deleteMany({ user: req.params.id }, (error, result) => {
         if (error) {
           console.error(error);
@@ -146,7 +147,7 @@ console.log("inside")
       }
       )
       // console.log(del)
-      res.send({ status: true ,del})
+      res.send({ status: true, del })
     }
     catch (error) {
       res.status(500).send(error)

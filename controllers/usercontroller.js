@@ -1,4 +1,4 @@
-const model = require('../models/model');
+const model = require('../models/usermodel');
 const otpmodel = require('../models/otpmodel')
 const { Course, Lesson } = require('../models/coursemodel');
 const bcrypt = require('bcrypt');

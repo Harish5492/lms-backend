@@ -1,4 +1,4 @@
-const user = require('../models/model');
+const user = require('../models/usermodel');
 
 const payment = require('../models/payment.model')
 const crypto = require('crypto');

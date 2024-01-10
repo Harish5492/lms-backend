@@ -1,5 +1,5 @@
 const bcrypt = require('bcrypt');
-const model = require('../models/model');
+const model = require('../models/usermodel');
 const otpmodel = require('../models/otpmodel')
 require('dotenv').config();
 const accountSid = process.env.accountSid;

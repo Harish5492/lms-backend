@@ -9,7 +9,7 @@ const key = process.env.JWTKEY;
 
 module.exports = function (req, res, next) {
     try{
-        console.log("inside middleware",req.headers)
+        console.log("inside middleware")
     const authHeader = req.headers['x-api-authorization'] 
     if (!authHeader) throw'authorization missing'
     console.log("authHeader", authHeader)

@@ -14,9 +14,14 @@ class courseController {
   async addCourse(req, res) {
     try {
       //   const newData = new coursemodel.Course({...req.body})
-      await Course.create({ ...req.body })
+      const newCourse = await Course.create({ ...req.body })
+      const CourseId = newCourse._id
+      console.log(CourseId)
 
-      res.json({ message: "added" });
+      const uniqueLink = `http://localhost:3000/courses/${CourseId}/link`;
+      
+      console.log("uniqueLink : -",uniqueLink)
+      res.json({ message: "added",uniqueLink });
     }
     catch (error) {
       res.status(500).send(error);
@@ -54,7 +59,7 @@ class courseController {
     const request  = await Lesson.insertMany(lessons) 
     console.log("requwst",request)   
     const Lessons = request.map(obj => obj._id);
-  console.log(Lessons)
+  // console.log(Lessons)
     await Course.findByIdAndUpdate(
     { _id: course }, // Find the user by ID
     { $push: {lessons : Lessons  },

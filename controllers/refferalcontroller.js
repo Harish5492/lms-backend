@@ -33,7 +33,7 @@ class referal {
                     referrelUserCount: count
                 }
             );
-            res.json({ message: "Code applied Successfully", status: true, discount: '5%' });
+            res.json({ message: "Code applied Successfully", status: true });
         } catch (error) {
             console.error(error);
             res.status(500).send(error.message || "Internal Server Error");

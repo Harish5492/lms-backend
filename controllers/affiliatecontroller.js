@@ -23,7 +23,7 @@ class affiliate {
             let decryptedData = JSON.parse(check)
 
             console.log("final is here", decryptedData)
-            res.json({ Data, status: true, uniqueLink, token });
+            res.json({ Data, status: true, token });
         } catch (error) {
             res.status(500).send(error);
         }

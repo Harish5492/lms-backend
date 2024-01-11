@@ -12,6 +12,11 @@ class affiliate {
             console.log(req.body)
             const { id } = req.params;
             const { decodedToken } = req.body;
+
+            const stat = await affiliateRequest.findOne({requestorID:decodedToken.id})
+            console.log(stat)
+            if(stat.requestStatus!=='Success') throw {message:"Unauthorized task"}
+
             const Data = await Course.findOne({ _id: id }, '_id title instructor');
             const trmp = { course: Data.id, user: decodedToken.id }
             let token = CryptoJS.AES.encrypt(JSON.stringify(trmp), Data.id, decodedToken.id).toString();
@@ -59,10 +64,11 @@ class affiliate {
         try {
             // const { decodedToken } = req.body;
             const { id } = req.params;
+            const { status, remarks } = req.body;
             const check = await affiliateRequest.findById(id)
 
             if(check.requestStatus!=='Pending') throw {message:"Unauthorized task"}
-            const { status, remarks } = req.body;
+            
             await referalAndAffiliate.reqAction(id, status, remarks)
             res.json({ message: "Updated", status: true })
 

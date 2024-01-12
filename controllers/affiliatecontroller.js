@@ -5,30 +5,47 @@ const CryptoJS = require("crypto-js");
 const Helper = require('../helper/index');
 const { referalAndAffiliate } = Helper.module
 
+
+require('dotenv').config();
+
+const key = process.env.AFFILIATETOKENKEY
 class affiliate {
 
-    async affiliateLink(req, res) {
+    async affiliationRequestStatus(req, res) {
         try {
             console.log(req.body)
             const { id } = req.params;
             const { decodedToken } = req.body;
 
-            const stat = await affiliateRequest.findOne({requestorID:decodedToken.id})
+            const stat = await affiliateRequest.findOne({ requestorID: decodedToken.id })
+            .sort({ requested_on: -1 }) // Sort in descending order based on createdAt (replace with your actual timestamp field)
+            .exec()
             console.log(stat)
-            if(stat.requestStatus!=='Success') throw {message:"Unauthorized task"}
 
-            const Data = await Course.findOne({ _id: id }, '_id title instructor');
-            const trmp = { course: Data.id, user: decodedToken.id }
-            let token = CryptoJS.AES.encrypt(JSON.stringify(trmp), Data.id, decodedToken.id).toString();
-            const uniqueLink = `http://localhost:3000/courses/${Data.id}/user/${decodedToken.id}`;
-            await affiliateMarketing.create({ courseId: Data._id, affiliateLink: uniqueLink, affiliator: decodedToken.id, })
+            if (stat) {
+                if(stat.requestStatus==='Pending'){
+                    res.json({ message: "Affiliation Request is Pending", status: true })
+                }
+                else if(stat.requestStatus==='Success'){
+                    const trmp = {  user: decodedToken.id, key }
+                    let token = CryptoJS.AES.encrypt(JSON.stringify(trmp),key, decodedToken.id).toString();
+                  
+                    res.json({ message: "Affiliation Request is Accepted ", status: true,token })
+                } 
+                else {
+                    res.json({ message: "Affiliation Request is Rejected ",remarks: stat.remarks, status: true })
+                }
+
+            }  
+             // const uniqueLink = `http://localhost:3000/courses/${Data.id}/user/${decodedToken.id}`;
+            // await affiliateMarketing.create({ courseId: Data._id, affiliateLink: uniqueLink, affiliator: decodedToken.id, })
             // let CryDtoken = CryptoJS.AES.decrypt(Data.id, decodedToken.id);
-            let CryDtoken = CryptoJS.AES.decrypt(token, Data.id);
-            let check = (CryDtoken.toString(CryptoJS.enc.Utf8));
-            let decryptedData = JSON.parse(check)
+            // let CryDtoken = CryptoJS.AES.decrypt(token, Data.id);
+            // let check = (CryDtoken.toString(CryptoJS.enc.Utf8));
+            // let decryptedData = JSON.parse(check)
 
-            console.log("final is here", decryptedData)
-            res.json({ Data, status: true, token });
+            // console.log("final is here", decryptedData)
+            // res.json({ Data, status: true, token });
         } catch (error) {
             res.status(500).send(error);
         }

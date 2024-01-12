@@ -1,6 +1,8 @@
 const referalCode = require('../models/referralmodel')
 const Helper = require('../helper/index');
 const { referalAndAffiliate } = Helper.module
+
+
 class referal {
     async referalCode(req, res) {
         try {

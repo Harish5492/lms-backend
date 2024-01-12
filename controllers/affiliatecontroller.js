@@ -1,6 +1,7 @@
 const affiliateMarketing = require('../models/affiliatemodel')
 const affiliateRequest = require('../models/affiliateRequestmodel')
 const { Course } = require('../models/coursemodel');
+
 const CryptoJS = require("crypto-js");
 const Helper = require('../helper/index');
 const { referalAndAffiliate } = Helper.module
@@ -14,7 +15,6 @@ class affiliate {
     async affiliationRequestStatus(req, res) {
         try {
             console.log(req.body)
-            const { id } = req.params;
             const { decodedToken } = req.body;
 
             const stat = await affiliateRequest.findOne({ requestorID: decodedToken.id })
@@ -27,10 +27,14 @@ class affiliate {
                     res.json({ message: "Affiliation Request is Pending", status: true })
                 }
                 else if(stat.requestStatus==='Success'){
-                    const trmp = {  user: decodedToken.id, key }
-                    let token = CryptoJS.AES.encrypt(JSON.stringify(trmp),key, decodedToken.id).toString();
+                    // const trmp = {  user: decodedToken.id, key }
+                   
+                    // const Role = decodedToken.role
+                   
+
+                    // let token = CryptoJS.AES.encrypt(JSON.stringify(trmp),key, decodedToken.id).toString();
                   
-                    res.json({ message: "Affiliation Request is Accepted ", status: true,token })
+                    res.json({ message: "Affiliation Request is Accepted ", status: true,roleChange })
                 } 
                 else {
                     res.json({ message: "Affiliation Request is Rejected ",remarks: stat.remarks, status: true })
@@ -79,11 +83,14 @@ class affiliate {
 
     async affiliationRequestAction(req, res) {
         try {
-            // const { decodedToken } = req.body;
+            console.log("inside req action")
+            const { decodedToken } = req.body;
+            console.log("role is ", decodedToken.role)
+            if(decodedToken.role !== 'admin') throw {message : "only admin can access",status : false};
             const { id } = req.params;
             const { status, remarks } = req.body;
             const check = await affiliateRequest.findById(id)
-
+              console.log("Check",check)
             if(check.requestStatus!=='Pending') throw {message:"Unauthorized task"}
             
             await referalAndAffiliate.reqAction(id, status, remarks)

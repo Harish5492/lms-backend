@@ -1,4 +1,5 @@
 const affiliateRequest = require('../models/affiliateRequestmodel')
+const model = require('../models/usermodel');
 
 class referalAndAffiliate {
     
@@ -26,14 +27,24 @@ class referalAndAffiliate {
 
 
     async reqAction(id, status, remarks) {
-    if(status==='Success') 
-        await affiliateRequest.findByIdAndUpdate(
+    if(status==='Success') {
+       const updation = await affiliateRequest.findByIdAndUpdate(
             id,
             {
                 $set: { requestStatus: status}
             },
             { new: true, runValidators: true }
-        );
+            
+        ); 
+        const roleChange = await model.findByIdAndUpdate({_id:updation.requestorID},
+            {
+                $set: { role: 'subAdmin'}
+            },
+            { new: true, runValidators: true }
+         )
+         console.log("ischange",roleChange)
+    }
+        
         else if(status==='Failure') {
             if(!remarks) throw "please enter remarks"
             await affiliateRequest.findByIdAndUpdate(

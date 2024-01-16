@@ -2,6 +2,7 @@ const userRouter = require('express').Router();
 const userController = require('../controllers/usercontroller');
 const { validateSignup, handleValidationErrors } = require('../middleware/expressvalidator');
 const authMiddleware = require('../middleware/authenticate');
+const role = require('../middleware/role')
 
 userRouter.post('/signUp', validateSignup, handleValidationErrors, userController.signUp)
 userRouter.get('/getUser', userController.getUser);

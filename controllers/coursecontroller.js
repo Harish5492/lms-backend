@@ -14,8 +14,7 @@ class courseController {
   async addCourse(req, res) {
     try {
       //   const newData = new coursemodel.Course({...req.body})
-      const { decodedToken } = req.body
-      if(decodedToken !=='admin') throw {message:"only admin can access" ,status :false}
+      
       const newCourse = await Course.create({ ...req.body })
       const CourseId = newCourse._id
       console.log(CourseId)
@@ -55,8 +54,7 @@ class courseController {
   async addMultipleLesson(req, res) {
     console.log("inside add Multiple Lesson")
     const { lessons, course } = req.body
-    const { decodedToken } = req.body
-    if(decodedToken !=='admin') throw {message:"only admin can access" ,status :false}
+ 
     lessons.forEach(obj => {
       obj.course = course;
     });
@@ -79,9 +77,7 @@ class courseController {
 
   async updateCourse(req, res) {
     try {
-      console.log("update Course", req.params)
-      const { decodedToken } = req.body
-      if(decodedToken !=='admin') throw {message:"only admin can access" ,status :false}
+      console.log("update Course", req.params)       
       const obj = req.body;
       console.log("obj", obj)
       // const obj1 = {...obj,title:"qweeeeerttttttttygvvvvvvvvvv",another:"antohr"}
@@ -101,8 +97,7 @@ class courseController {
     try {
       console.log("inside update Lesson")
       const { id } = req.params;
-      const { decodedToken } = req.body
-      if(decodedToken !=='admin') throw {message:"only admin can access" ,status :false}
+       
       const updatedLesson = { ...req.body, updatedOn: Date.now() }
       const updatedDocument = await Lesson.findByIdAndUpdate(id, updatedLesson, { new: true });
       if (updatedDocument) {
@@ -166,8 +161,7 @@ class courseController {
     try {
       console.log("inside delete a course")
       console.log(req.params.id)
-      const { decodedToken } = req.body
-      if(decodedToken !=='admin') throw {message:"only admin can access" ,status :false}
+       
       const a = await Course.findByIdAndDelete({ _id: req.params.id })
       console.log(a, "a")
       const del = await Lesson.deleteMany({ course: req.params.id }, (error, result) => {
@@ -189,8 +183,7 @@ class courseController {
   async deleteLesson(req, res) {
     try {
       console.log("inside delete a lesson")
-      const { decodedToken } = req.body
-      if(decodedToken !=='admin') throw {message:"only admin can access" ,status :false}
+       
       const lesson = await Lesson.findByIdAndDelete(req.params.id)
       console.log("vheck", lesson)
       await Course.findByIdAndUpdate(

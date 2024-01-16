@@ -1,11 +1,12 @@
 const billingRouter = require('express').Router();
 const billingController = require('../controllers/billingcontroller')
 const authMiddleware = require('../middleware/authenticate');
+const role = require('../middleware/role')
 const { validateSignup, handleValidationErrors } = require('../middleware/expressvalidator');
 
 billingRouter.post('/billing',validateSignup[4],handleValidationErrors,billingController.billingDetails)
 
-billingRouter.get('/payment/getDetails',billingController.getDetails)
+billingRouter.get('/payment/getDetails',authMiddleware,role.isAdmin,billingController.getDetails)
 // billingRouter.get('/payment/getAllDetails',billingController.getAllDetails)
 
 billingRouter.post('/payment',authMiddleware,billingController.payment)

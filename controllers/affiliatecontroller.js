@@ -121,8 +121,6 @@ class affiliate {
             const { id } = req.params;
             const { status, remarks } = req.body;
             console.log("role is ", decodedToken.role)
-            if (decodedToken.role !== 'admin') throw { message: "only admin can access", status: false };
-
             const check = await affiliateRequest.findById(id)
             console.log("Check", check)
             if (check.requestStatus !== 'Pending') throw { message: "Unauthorized task" }

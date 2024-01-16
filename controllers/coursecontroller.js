@@ -14,12 +14,14 @@ class courseController {
   async addCourse(req, res) {
     try {
       //   const newData = new coursemodel.Course({...req.body})
+      const { decodedToken } = req.body
+      if(decodedToken !=='admin') throw {message:"only admin can access" ,status :false}
       const newCourse = await Course.create({ ...req.body })
       const CourseId = newCourse._id
       console.log(CourseId)
 
       // const uniqueLink = `http://localhost:3000/courses/${CourseId}/link`;
-      
+
       // console.log("uniqueLink : -",uniqueLink)
       res.json({ message: "added" });
     }
@@ -50,58 +52,66 @@ class courseController {
     }
   }
 
-  async addMultipleLesson(req,res){ 
+  async addMultipleLesson(req, res) {
     console.log("inside add Multiple Lesson")
-    const {lessons,course} = req.body
-    lessons.forEach(obj => { 
+    const { lessons, course } = req.body
+    const { decodedToken } = req.body
+    if(decodedToken !=='admin') throw {message:"only admin can access" ,status :false}
+    lessons.forEach(obj => {
       obj.course = course;
-    });    
-    const request  = await Lesson.insertMany(lessons) 
-    console.log("requwst",request)   
+    });
+    const request = await Lesson.insertMany(lessons)
+    console.log("requwst", request)
     const Lessons = request.map(obj => obj._id);
-  // console.log(Lessons)
+    // console.log(Lessons)
     await Course.findByIdAndUpdate(
-    { _id: course }, // Find the user by ID
-    { $push: {lessons : Lessons  },
-    $set: { updatedOn: Date.now() } }, // Add the new email to the 'emails' array
+      { _id: course }, // Find the user by ID
+      {
+        $push: { lessons: Lessons },
+        $set: { updatedOn: Date.now() }
+      }, // Add the new email to the 'emails' array
 
-  );
-      // console.log("result",result)
-    res.json({message: 'succesful'})
-  } 
+    );
+    // console.log("result",result)
+    res.json({ message: 'succesful' })
+  }
 
 
-  async updateCourse(req,res){
+  async updateCourse(req, res) {
     try {
-      console.log("update Course",req.params)
+      console.log("update Course", req.params)
+      const { decodedToken } = req.body
+      if(decodedToken !=='admin') throw {message:"only admin can access" ,status :false}
       const obj = req.body;
-      console.log("obj",obj)
+      console.log("obj", obj)
       // const obj1 = {...obj,title:"qweeeeerttttttttygvvvvvvvvvv",another:"antohr"}
-  // console.log(obj1)
+      // console.log(obj1)
       // const obj = {}  
       // if (title) obj.title = title
       // if (content) obj.content = content 
       // if (videoUrl) obj.videoUrl = videoUrl
-      await Course.findByIdAndUpdate( req.params.id, obj,{updatedOn : Date.now()} );
+      await Course.findByIdAndUpdate(req.params.id, obj, { updatedOn: Date.now() });
       res.json({ message: "updated successfully" });
     } catch (error) {
       res.status(500).send(error);
     }
   }
 
-  async updateLesson(req,res){
-    try{
+  async updateLesson(req, res) {
+    try {
       console.log("inside update Lesson")
-      const {id} = req.params;
-      const updatedLesson = {...req.body, updatedOn : Date.now()}
-      const updatedDocument = await Lesson.findByIdAndUpdate(id, updatedLesson, {new:true});
-      if(updatedDocument){
-        res.json({message:"updated successfully"})
-      }else{
-        res.status(404).json ({message:"Lesson not found"})
+      const { id } = req.params;
+      const { decodedToken } = req.body
+      if(decodedToken !=='admin') throw {message:"only admin can access" ,status :false}
+      const updatedLesson = { ...req.body, updatedOn: Date.now() }
+      const updatedDocument = await Lesson.findByIdAndUpdate(id, updatedLesson, { new: true });
+      if (updatedDocument) {
+        res.json({ message: "updated successfully" })
+      } else {
+        res.status(404).json({ message: "Lesson not found" })
       }
     }
-    catch(error){
+    catch (error) {
       res.status(404).send(error)
     }
   }
@@ -109,30 +119,30 @@ class courseController {
 
   async getAllLesson(req, res) {
     try {
-      console.log("inside All Lesson",req.params.id)
+      console.log("inside All Lesson", req.params.id)
       const lesson = await Lesson.find({ course: req.params.id })
-      if(!lesson) throw  "No Lesson found"
+      if (!lesson) throw "No Lesson found"
       console.log(lesson)
       res.send({ status: true, lesson })
     }
     catch (error) {
-      res.status(500).send({error : "Lesson Not found"});
+      res.status(500).send({ error: "Lesson Not found" });
     }
 
   }
   async getAllCourses(req, res) {
     try {
-    
+
       console.log("getAllCourses API has been accessed")
-    const page = parseInt(req.query.page) || 1;
-    const itemsPerPage = parseInt(req.query.itemsPerPage) || 12;
-    const skip = (page - 1) * itemsPerPage;
-    const courses = await Course.find()
-      .skip(skip)
-      .limit(itemsPerPage)
-      .exec();
+      const page = parseInt(req.query.page) || 1;
+      const itemsPerPage = parseInt(req.query.itemsPerPage) || 12;
+      const skip = (page - 1) * itemsPerPage;
+      const courses = await Course.find()
+        .skip(skip)
+        .limit(itemsPerPage)
+        .exec();
       const totalCourses = await Course.countDocuments();
-      res.send({ status: true, courses ,totalCourses , itemsPerPage })
+      res.send({ status: true, courses, totalCourses, itemsPerPage })
     }
     catch (error) {
       res.status(500).send(error);
@@ -142,13 +152,13 @@ class courseController {
 
   async getCourseById(req, res) {
     try {
-      console.log("inside getcourse API",req.params.id)
-      const course = await Course.findById({_id:req.params.id})
+      console.log("inside getcourse API", req.params.id)
+      const course = await Course.findById({ _id: req.params.id })
       console.log(course)
       res.json({ status: true, course })
     }
     catch (error) {
-      res.status(500).json({error:"Course Not Found"})
+      res.status(500).json({ error: "Course Not Found" })
     }
   }
 
@@ -156,6 +166,8 @@ class courseController {
     try {
       console.log("inside delete a course")
       console.log(req.params.id)
+      const { decodedToken } = req.body
+      if(decodedToken !=='admin') throw {message:"only admin can access" ,status :false}
       const a = await Course.findByIdAndDelete({ _id: req.params.id })
       console.log(a, "a")
       const del = await Lesson.deleteMany({ course: req.params.id }, (error, result) => {
@@ -177,17 +189,21 @@ class courseController {
   async deleteLesson(req, res) {
     try {
       console.log("inside delete a lesson")
+      const { decodedToken } = req.body
+      if(decodedToken !=='admin') throw {message:"only admin can access" ,status :false}
       const lesson = await Lesson.findByIdAndDelete(req.params.id)
-      console.log("vheck",lesson)
+      console.log("vheck", lesson)
       await Course.findByIdAndUpdate(
         { _id: lesson.course },
-        { $pull: { lessons: lesson._id },
-        $set: { updatedOn: Date.now() }  },
-      ) 
+        {
+          $pull: { lessons: lesson._id },
+          $set: { updatedOn: Date.now() }
+        },
+      )
       res.json({ status: true, message: "Delete successfully" })
     }
     catch (error) {
-      res.status(500).send({error:"Delete operation failed"})
+      res.status(500).send({ error: "Delete operation failed" })
     }
   }
 

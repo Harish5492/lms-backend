@@ -47,6 +47,7 @@ class referalAndAffiliate {
          console.log("ischange",roleChange)
     }
 }
+
 }
         else if(status==='Failure') {
             if(!remarks) throw "please enter remarks"

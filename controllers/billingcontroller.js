@@ -20,27 +20,62 @@ class BillingController {
     }
   }
 
-  async getDetails(req, res) {
-    try {
-      console.log("inside get payment Details")
+async getDetails(req, res) {
+  try {
+      console.log("inside get payment Details");
 
       const page = parseInt(req.query.page) || 1;
       const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
       const skip = (page - 1) * itemsPerPage;
-      const details = await payment.find()
-        .skip(skip)
-        .limit(itemsPerPage)
-        .exec();
-      const totalRecords = await payment.countDocuments();
-      res.json({ status: true, details, totalRecords })
-    }
-    catch (error) {
-      res.status(500).json({
-        message: error.message,
-        success: false
+
+      // Extract the search query from the request
+      const searchQuery = req.query.search || '';
+
+      // Use the regex in the query to filter the data
+      let details = await payment.find({
+          $or: [
+              { email: { $regex: new RegExp(searchQuery, 'i') } },
+              { amount: { $regex: new RegExp(searchQuery, 'i') } },
+              { status: { $regex: new RegExp(searchQuery, 'i') } },
+            
+          ]
       })
-    }
+      .skip(skip)
+      .limit(itemsPerPage)
+      .exec();
+
+      let totalRecords = await payment.countDocuments({
+            $or: [
+                { email: { $regex: new RegExp(searchQuery, 'i') } },
+                { amount: { $regex: new RegExp(searchQuery, 'i') } },
+                { status: { $regex: new RegExp(searchQuery, 'i') } },
+              
+            ]
+        })
+
+      // console.log("before if")
+      // if(details.length==0){
+      //   console.log("inside if")
+      //    details = await payment.find()
+      // .skip(skip)
+      // .limit(itemsPerPage)
+      // .exec();
+
+      //  totalRecords = await payment.countDocuments()
+
+      // }
+         
+
+      res.json({ status: true, details, totalRecords });
+  } catch (error) {
+      res.status(500).json({
+          message: error.message,
+          success: false
+      });
   }
+}
+
+
 
 
   async payment(req, res) {

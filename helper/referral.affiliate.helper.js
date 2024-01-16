@@ -26,7 +26,7 @@ class referalAndAffiliate {
     }
 
 
-    async reqAction(id, status, remarks) {
+    async reqAction(id, status, remarks,decodedToken) {
     if(status==='Success') {
        const updation = await affiliateRequest.findByIdAndUpdate(
             id,
@@ -36,6 +36,8 @@ class referalAndAffiliate {
             { new: true, runValidators: true }
             
         ); 
+     
+     { if(decodedToken.role!=='admin'){
         const roleChange = await model.findByIdAndUpdate({_id:updation.requestorID},
             {
                 $set: { role: 'subAdmin'}
@@ -44,7 +46,8 @@ class referalAndAffiliate {
          )
          console.log("ischange",roleChange)
     }
-        
+}
+}
         else if(status==='Failure') {
             if(!remarks) throw "please enter remarks"
             await affiliateRequest.findByIdAndUpdate(

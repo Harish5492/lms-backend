@@ -2,10 +2,10 @@ const mongoose = require("mongoose");
 mongoose.Promise = Promise;
 
 // mongoose connection
-const connectDB = async()=>{
-    try{
+const connectDB = async () => {
+    try {
         const DB = `mongodb://127.0.0.1:27017/user`
-        mongoose.connect(DB,{
+        mongoose.connect(DB, {
             useUnifiedTopology: true,
             useNewUrlParser: true,
             useFindAndModify: false,
@@ -15,9 +15,9 @@ const connectDB = async()=>{
         console.log("MongoDB Connected Successfully")
     }
 
-    catch(err){
+    catch (err) {
         console.log("Error in connecting mongoose Db :", err)
-    } 
+    }
 }
 
 module.exports = connectDB;

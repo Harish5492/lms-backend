@@ -6,6 +6,7 @@ const { validateSignup, handleValidationErrors } = require('../middleware/expres
 billingRouter.post('/billing',validateSignup[4],handleValidationErrors,billingController.billingDetails)
 
 billingRouter.get('/payment/getDetails',billingController.getDetails)
+// billingRouter.get('/payment/getAllDetails',billingController.getAllDetails)
 
 billingRouter.post('/payment',authMiddleware,billingController.payment)
 billingRouter.get('/payment/checkStatus/:txnId',billingController.checkStatus)

@@ -18,10 +18,10 @@ class courseController {
       const CourseId = newCourse._id
       console.log(CourseId)
 
-      const uniqueLink = `http://localhost:3000/courses/${CourseId}/link`;
+      // const uniqueLink = `http://localhost:3000/courses/${CourseId}/link`;
       
-      console.log("uniqueLink : -",uniqueLink)
-      res.json({ message: "added",uniqueLink });
+      // console.log("uniqueLink : -",uniqueLink)
+      res.json({ message: "added" });
     }
     catch (error) {
       res.status(500).send(error);

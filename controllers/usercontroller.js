@@ -349,7 +349,22 @@ class UserController {
     }
   }
 
+  async test(req, res) {
+    try {
+      console.log("inside test")
 
+      const data = await model.findOne({ userName: 'ranaHarish' });
+      if (data) {
+        await data.populate('courseEnrolled').execPopulate();
+        console.log("data", data);
+        res.json({ data, message: "successful", status: true });
+      } else {
+        res.json({ message: "User not found", status: false });
+      }
+    } catch (error) {
+      res.status(500).send(error.message);
+    }
+  }
 
 
 }

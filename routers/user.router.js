@@ -18,4 +18,6 @@ userRouter.post('/changePassword',validateSignup[5],validateSignup[6],handleVali
 userRouter.get('/getUserbyID/:id', userController.getUserbyID);
 userRouter.get('/myCourses',authMiddleware,userController.myCourses);
 
-module.exports = userRouter;    
+
+userRouter.get('/test',userController.test)
+module.exports = userRouter;   

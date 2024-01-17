@@ -5,7 +5,8 @@ const axios = require('axios');
 const Helper = require('../helper/index')
 const { paymentHelper } = Helper.module
 require("dotenv").config();
-const paymentMerchantId = process.env.MERCHANTID
+// const paymentMerchantId = process.env.MERCHANTID
+const paymentMerchantId = 'PGTESTPAYUAT'
 
 class BillingController {
 
@@ -43,6 +44,7 @@ async getDetails(req, res) {
       .skip(skip)
       .limit(itemsPerPage)
       .exec();
+      console.log("details",details)
 
       let totalRecords = await payment.countDocuments({
             $or: [
@@ -134,7 +136,7 @@ async getDetails(req, res) {
       })
     }
   }
-
+ 
 
   async checkStatus(req, res) {
     console.log("query", req.query)
@@ -149,8 +151,9 @@ async getDetails(req, res) {
       console.log("inside")
       if (response.data.success === true && response.data.code != "PAYMENT_PENDING") {
         console.log(response.data)///
-        paymentHelper.updateStatus(merchantTransactionId, "Success")
-        paymentHelper.addCourse(student, course)
+        await paymentHelper.addCourse(student, course)
+        await paymentHelper.updateStatus(merchantTransactionId, "Success")
+
 
         return res.status(200).send({ success: true, message: "Payment Success" });
       } else if (response.data.success === false && response.data.code != "PAYMENT_PENDING") {

@@ -52,15 +52,18 @@ class courseController {
   }
 
   async addMultipleLesson(req, res) {
-    console.log("inside add Multiple Lesson")
+    try{
+    console.log("inside add Multiple Lesson",req.body)
     const { lessons, course } = req.body
+    console.log("course",course)
+    if(!course || !lessons) throw { message : "please check request",status:false}
  
-    lessons.forEach(obj => {
+    await lessons.forEach(obj => { 
       obj.course = course;
     });
     const request = await Lesson.insertMany(lessons)
-    console.log("requwst", request)
-    const Lessons = request.map(obj => obj._id);
+    console.log("request is", request)
+    const Lessons =  request.map(obj => obj._id);
     // console.log(Lessons)
     await Course.findByIdAndUpdate(
       { _id: course }, // Find the user by ID
@@ -72,6 +75,10 @@ class courseController {
     );
     // console.log("result",result)
     res.json({ message: 'succesful' })
+    }
+    catch (error) {
+      res.status(500).send(error);
+    }
   }
 
 
@@ -95,7 +102,7 @@ class courseController {
 
   async updateLesson(req, res) {
     try {
-      console.log("inside update Lesson")
+      console.log("inside update Lesson",req.body,req.params)
       const { id } = req.params;
        
       const updatedLesson = { ...req.body, updatedOn: Date.now() }

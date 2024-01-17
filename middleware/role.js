@@ -10,7 +10,7 @@ class role{
     next()
     }
     catch(err) {
-        return res.send("error : " + err)
+        return res.send(err)
     }
 }
 async isSubAdmin (req, res, next) {
@@ -21,7 +21,7 @@ async isSubAdmin (req, res, next) {
     next()
     }
     catch(err) {
-        return res.send("error : " + err)
+        return res.send(err)
     }
 }
 }

@@ -64,12 +64,13 @@ class UserController {
   async signUp(req, res) {
     try {
       console.log("inside signUp", req.body)
-      UserHelper.userCheck(req.body.email, req.body.userName, req.body.phoneNumber)
+      await UserHelper.userCheck(req.body.email, req.body.userName, req.body.phoneNumber)
       const password = await UserHelper.encryptPassword(req.body.password);
       const data = await model.create({ ...req.body, password });
       res.json({ data, status: true });
     } catch (error) {
-      res.status(500).send(error.message);
+      console.log(error.message)
+      res.status(500).send(error);
     }
   }
 
@@ -82,12 +83,14 @@ class UserController {
  **/
   async updateUser(req, res) {
     try {
-      const { firstName, lastName, userName, email } = req.body;
+      console.log("inside update user")
+      const { firstName, lastName, userName, email, phoneNumber } = req.body;
       const obj = {}
       if (firstName) obj.firstName = firstName
       if (lastName) obj.lastName = lastName
       if (userName) obj.userName = userName
       if (email) obj.email = email
+      if (phoneNumber) obj.phoneNumber = phoneNumber
       await model.findByIdAndUpdate(req.params.id, obj);
       res.json({ message: "updated successfully" });
     } catch (error) {
@@ -271,23 +274,23 @@ class UserController {
   }
 
 
-//   /**
-//  * @function profile
-//  * @param  req 
-//  * @param  res 
-//  * @returns userData
-//  **/
-//   async profile(req, res) {
-//     try {
-//       // console.log('req.body : ', req.body);
-//       const userData = await model
-//         .findOne({ email: req.body.email }, 'name email')
-//         .exec();
-//       res.json({ message: 'verification succesful', userData });
-//     } catch (error) {
-//       res.status(500).send(error);
-//     }
-//   }
+  //   /**
+  //  * @function profile
+  //  * @param  req 
+  //  * @param  res 
+  //  * @returns userData
+  //  **/
+  //   async profile(req, res) {
+  //     try {
+  //       // console.log('req.body : ', req.body);
+  //       const userData = await model
+  //         .findOne({ email: req.body.email }, 'name email')
+  //         .exec();
+  //       res.json({ message: 'verification succesful', userData });
+  //     } catch (error) {
+  //       res.status(500).send(error);
+  //     }
+  //   }
   async myCourses(req, res) {
     try {
       console.log("inside myCourses");
@@ -295,7 +298,7 @@ class UserController {
       // console.log("id", decodedToken.id);
       const courses = await model.findOne({ _id: decodedToken.id }, 'courseEnrolled');
       // console.log("Courses", courses);
-      const myCourses = []; 
+      const myCourses = [];
       for (const data of courses.courseEnrolled) {
         const Allcourse = await Course.findById({ _id: data });
         // console.log(Allcourse);
@@ -328,23 +331,23 @@ class UserController {
  * @param  res 
  * @returns userData
 //  **/
-async profile(req, res) {
-  try {
-    console.log("inside profile")
-    const { decodedToken } = req.body;
-    console.log("id", decodedToken.id);
-    if (!decodedToken.id) throw { message: 'No user Found', status: false }
-    const userData = await model
-    .findOne({ _id: decodedToken.id })
-    .select('firstName lastName email userName phoneNumber created_on courseEnrolled')
-    .exec();
-    const length = userData.courseEnrolled.length
-    if (!userData) throw { message: 'No email Found', status: false}
-    res.json({ userData,length, status: true });
-  } catch (error) {
-    res.status(500).send(error);
+  async profile(req, res) {
+    try {
+      console.log("inside profile")
+      const { decodedToken } = req.body;
+      console.log("id", decodedToken.id);
+      if (!decodedToken.id) throw { message: 'No user Found', status: false }
+      const userData = await model
+        .findOne({ _id: decodedToken.id })
+        .select('firstName lastName email userName phoneNumber created_on courseEnrolled')
+        .exec();
+      const length = userData.courseEnrolled.length
+      if (!userData) throw { message: 'No email Found', status: false }
+      res.json({ userData, length, status: true });
+    } catch (error) {
+      res.status(500).send(error);
+    }
   }
-}
 
 
 

@@ -19,7 +19,7 @@ class affiliate {
             const stat = await affiliateRequest.findOne({ requestorID: decodedToken.id })
                 .sort({ requested_on: -1 }) // Sort in descending order based on createdAt (replace with your actual timestamp field)
                 .exec()
-            console.log(stat)
+            console.log(stat,"fffffff")
 
             if (stat) {
                 if (stat.requestStatus === 'Pending') {
@@ -40,6 +40,8 @@ class affiliate {
                 }
 
             }
+
+            else res.json({ message: "Please send request First ", status: false })
             // const uniqueLink = `http://localhost:3000/courses/${Data.id}/user/${decodedToken.id}`;
             // await affiliateMarketing.create({ courseId: Data._id, affiliateLink: uniqueLink, affiliator: decodedToken.id, })
             // let CryDtoken = CryptoJS.AES.decrypt(Data.id, decodedToken.id);

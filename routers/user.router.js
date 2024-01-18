@@ -8,7 +8,7 @@ userRouter.post('/signUp', validateSignup, handleValidationErrors, userControlle
 userRouter.get('/getUser', userController.getUser);
 userRouter.get('/getAllUsers', userController.getAllUsers),
 userRouter.post('/login', userController.login);
-userRouter.put('/updateUser/:id', userController.updateUser);
+userRouter.put('/updateUser/:id',validateSignup[0],validateSignup[1],validateSignup[2],validateSignup[3], handleValidationErrors, userController.updateUser);
 userRouter.delete('/removeUser/:id', userController.removeUser);
 userRouter.put('/forgotPassword/:email', validateSignup[4], validateSignup[5], handleValidationErrors, userController.forgotPassword);
 userRouter.get('/profile', authMiddleware, userController.profile);

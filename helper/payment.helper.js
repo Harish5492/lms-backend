@@ -10,6 +10,8 @@ const paymentMerchantId = 'PGTESTPAYUAT'
 const paymentMerchantUserId = process.env.MERCHANTUSERID
 
 
+
+
 class paymentHelper {
 
   async addCourse(student, coursesArray) {
@@ -59,7 +61,7 @@ class paymentHelper {
 
   getData(merchantTransactionId, totalPrice, que) {
     const data = {
-      merchantId: paymentMerchantId,
+      merchantId: paymentMerchantId, 
       merchantUserId: paymentMerchantUserId,
       merchantTransactionId: merchantTransactionId,
       amount: totalPrice,
@@ -85,7 +87,7 @@ class paymentHelper {
       data: {
         request: payloadMain
       }
-    };
+    }; 
     return options;
   }
 

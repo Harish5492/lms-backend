@@ -83,7 +83,7 @@ class UserController {
  **/
   async updateUser(req, res) {
     try {
-      console.log("inside update user")
+      console.log("inside update user", req.body)
       const { firstName, lastName, userName, email, phoneNumber } = req.body;
       const obj = {}
       if (firstName) obj.firstName = firstName
@@ -92,9 +92,19 @@ class UserController {
       if (email) obj.email = email
       if (phoneNumber) obj.phoneNumber = phoneNumber
       await model.findByIdAndUpdate(req.params.id, obj);
-      res.json({ message: "updated successfully" });
-    } catch (error) {
-      res.status(500).send(error);
+      res.json({ message: "updated successfully", status: true });
+    }
+    catch (error) {
+      if (error.name === 'ValidationError') {
+        res.status(400).json({ status: false, error: error.message });
+      } else if (error.name === 'MongoError' && error.code === 11000) {
+        const key = Object.keys(error.keyValue)[0];
+
+        res.status(409).json({ status: false, message: `${key} already exists` });
+      } else {
+        console.error(error);
+        res.status(500).json({ status: false, message: error.message });
+      }
     }
   }
 
@@ -308,8 +318,27 @@ class UserController {
       res.json({ message: "Your courses are :- ", myCourses, status: true });
     } catch (error) {
       res.status(404).json(error.message);
-    }
-  }
+  
+    }}
+  // async myCourses(req, res) {
+  //   try {
+  //     console.log("inside myCourses");
+  //     const { decodedToken } = req.body;
+  //     // console.log("id", decodedToken.id);
+  //     const courses = await model.findOne({ _id: decodedToken.id} ,'courseEnrolled').populate('courseEnrolled');
+  //     // console.log("Courses", courses);
+  //     // const myCourses = [];
+  //     // for (const data of courses.courseEnrolled) {
+  //     //   const Allcourse = await Course.findById({ _id: data });
+  //     //   // console.log(Allcourse);
+  //     //   myCourses.push(Allcourse);
+  //     // }
+  //     // console.log("asdfghjkl;kjhgfdrtfgyhuiytryu",myCourses);
+  //     res.json({ message: "Your courses are :- ", courses, status: true });
+  //   } catch (error) {
+  //     res.status(404).json(error.message);
+  //   }
+  // }
 
   async getUserbyID(req, res) {
     try {
@@ -352,10 +381,10 @@ class UserController {
   async test(req, res) {
     try {
       console.log("inside test")
-
-      const data = await model.findOne({ userName: 'ranaHarish' });
+      const { name } = req.body
+      const data = await model.findOne({ userName: name }, 'courseEnrolled').populate('courseEnrolled');
       if (data) {
-        await data.populate('courseEnrolled').execPopulate();
+        // await data.populate('courseEnrolled').execPopulate();
         console.log("data", data);
         res.json({ data, message: "successful", status: true });
       } else {

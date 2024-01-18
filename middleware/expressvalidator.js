@@ -3,15 +3,24 @@ const { body, validationResult } = require('express-validator');
 const validateSignup = [
   // validate name
   body('firstName')
+  .trim()
   .isLength({ min: 3 })
-  .withMessage('name must be at least 3 characters long'),
+  .withMessage('firstName must be at least 3 characters long')
+  .isAlpha()
+  .withMessage('firstName must be only Alphabets')
+  ,
 
   body('lastName')
-  .isLength({ min: 3 })
-  .withMessage('name must be at least 3 characters long'),
+  .trim()
+  .isLength({ min: 3 })  
+  .withMessage('lastName must be at least 3 characters long')
+  .isAlpha()
+  .withMessage('lastName must be only Alphabets')
+,
 
   // Validate username
   body('userName')
+    .trim()
     .isLength({ min: 3 })
     .withMessage('Username must be at least 3 characters long')
     .isAlphanumeric()
@@ -19,13 +28,16 @@ const validateSignup = [
 
   // Validate phoneNumber
   body('phoneNumber')
-  .isLength({min:10},{max:10})
-  .withMessage('phoneNumber must have 10 digit')
+  .trim()
+  .isLength({ min: 10, max: 10 })
+  .withMessage('phoneNumber must have 10 digits')
   .isNumeric()
-  .withMessage("numbers should be numeric"),
+  .withMessage('Numbers should be numeric'),
+
 
   // Validate email
   body('email')
+    .trim()
     .isEmail()
     .withMessage('Invalid email address')
     .matches(/\.com$|\.org$|\.edu$|\.net$|\.gov$/i)

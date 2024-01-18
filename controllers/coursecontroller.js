@@ -1,4 +1,5 @@
 // const coursemodel = require('../models/coursemodel')
+const model = require('../models/usermodel');
 const { Course, Lesson } = require('../models/coursemodel');
 const courseRouter = require('../routers/course.router');
 
@@ -53,9 +54,10 @@ class courseController {
 
   async addMultipleLesson(req, res) {
     try{
-    console.log("inside add Multiple Lesson",req.body)
+    console.log("inside add Multiple Lesson","\n request body ",req.body)
     const { lessons, course } = req.body
-    console.log("course",course)
+    console.log("course ",course)
+    console.log("lessons ",lessons)
     if(!course || !lessons) throw { message : "please check request",status:false}
  
     await lessons.forEach(obj => { 
@@ -91,6 +93,7 @@ class courseController {
       // console.log(obj1)
       // const obj = {}  
       // if (title) obj.title = title
+      // if (title) obj.title = title
       // if (content) obj.content = content 
       // if (videoUrl) obj.videoUrl = videoUrl
       await Course.findByIdAndUpdate(req.params.id, obj, { updatedOn: Date.now() });
@@ -122,13 +125,23 @@ class courseController {
   async getAllLesson(req, res) {
     try {
       console.log("inside All Lesson", req.params.id)
-      const lesson = await Lesson.find({ course: req.params.id })
+      const { decodedToken } = req.body
+      const { id } = req.params
+
+      const user= await model.findById(decodedToken.id,'courseEnrolled') 
+      console.log(user)
+      if(decodedToken.role === 'admin'  || user.courseEnrolled.includes(id)) { 
+      const lesson = await Lesson.find({ course: id })
       if (!lesson) throw "No Lesson found"
       console.log(lesson)
-      res.send({ status: true, lesson })
+      return res.send({ status: true, lesson })
+      }
+      else{
+        throw {message : "Please buy course first"}
+      }
     }
     catch (error) {
-      res.status(500).send({ error: "Lesson Not found" });
+      res.status(500).send(error );
     }
 
   }

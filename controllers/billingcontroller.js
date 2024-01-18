@@ -110,6 +110,7 @@ async getDetails(req, res) {
       const { checksum, payloadMain } = paymentHelper.hashing(data)
       const options = paymentHelper.getOptions(checksum, payloadMain)
       axios.request(options).then(function (response) {
+        console.log("inside axios request")
         console.log(response.data.data.instrumentResponse.redirectInfo.url)
 
         const paymentDetail = {
@@ -122,13 +123,14 @@ async getDetails(req, res) {
         console.log(paymentDetail)
         paymentHelper.addPayment(paymentDetail)
 
-        return res.send(response.data.data.instrumentResponse.redirectInfo.url)
+        res.send(response.data.data.instrumentResponse.redirectInfo.url)
+        // res.send({message:'successful'})
       })
         .catch(function (error) {
           console.error(error);
           throw error;
         });
-
+      
     } catch (error) {
       res.status(500).send({
         message: error.message,

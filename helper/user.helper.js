@@ -27,9 +27,13 @@ class UserHelper {
     const usernameExist = await model.findOne({ userName: userName })
     if (usernameExist) throw { message: "UserName already exists", status: false };
     const phoneExist = await model.findOne({ phoneNumber: phoneNumber })
-    if (phoneExist) throw { message: "phonNumber already exists", status: false }
+    if (phoneExist) throw { message: "phoneNumber already exists", status: false }
   }
 
+
+  // async userName(username){
+  //   const
+  // }
 
 
 

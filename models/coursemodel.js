@@ -15,7 +15,7 @@ const courseSchema = new mongoose.Schema({
   subject: { type: String, required: true },
   level: { type: String, required: true },
   updatedOn: { type: Date },
-  // studentsEnrolled: [{ type: mongoose.Schema.Types.ObjectId, unique: true, ref: 'User' }],
+  studentsEnrolled: [{ type: mongoose.Schema.Types.ObjectId, unique: true, ref: 'User' }],
 });
 
 const Course = mongoose.model('Course', courseSchema);

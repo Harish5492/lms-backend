@@ -11,21 +11,22 @@ const UserDetails = new mongoose.Schema({
   password: { type: String, required: [true, "User password is Required"] },
   courseEnrolled: [{ type: mongoose.Schema.Types.ObjectId,  ref: 'Course' }], 
   role: { type: String, enum: validRoles, default: 'user'},
+  affilliationLinkRequested: {type: Boolean,default: true },
   created_on: { type: Date, default: Date.now }  
 }); 
-UserDetails.pre('findOneAndUpdate', function (next) {
-  console.log("inside db")
-  const update = this.getUpdate();
-  console.log(update)
-  if (update && update.courseEnrolled && Array.isArray(update.courseEnrolled)) {
-    const uniqueCourses = new Set(update.courseEnrolled.map(course => course.toString()));
-    console.log(uniqueCourses)
-    if (uniqueCourses.size != update.courseEnrolled.length) {
-      throw{message:'Duplicate courses are not allowed.'}
-    }
-  }
+// UserDetails.pre('findOneAndUpdate', function (next) {
+//   console.log("inside db")
+//   const update = this.getUpdate();
+//   console.log(update)
+//   if (update && update.courseEnrolled && Array.isArray(update.courseEnrolled)) {
+//     const uniqueCourses = new Set(update.courseEnrolled.map(course => course.toString()));
+//     console.log(uniqueCourses)
+//     if (uniqueCourses.size != update.courseEnrolled.length) {
+//       throw{message:'Duplicate courses are not allowed.'}
+//     }
+//   }
 
-  next();
-});
+//   next();
+// });
 
 module.exports = mongoose.model('UserDetails', UserDetails)  

@@ -29,15 +29,16 @@ class referalAndAffiliate {
  
     async checkWhoCreatedCode(decodedToken,code) {
         console.log("inside checkWhoCreatedCode")
+        console.log("id",decodedToken.id)
         const check = await referalmodel.findOne({ referrelOwner : decodedToken.id}, 'referrelCode')
         .sort({createdAt : -1 }) // Sort in descending order based on createdAt (replace with your actual timestamp field)
                 .exec()
 
-        console.log("cjek", check)
+        console.log("cjek", check.referrelCode)
         if(check.referrelCode === code) throw {message:"You Can Not Use Your Own Refferal Code",status :false}
 
-    }
-
+    }  
+  
 
     async reqAction(id, status, remarks, decodedToken) {
         if (status === 'Success') {

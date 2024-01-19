@@ -97,12 +97,13 @@ async getDetails(req, res) {
       //     success: false,
       //   });
       // }
-
+  
       const queryParams = queryString.split('&');
       const productIds = queryParams.map(param => {
         const [, productId] = param.split('='); // Using destructuring to get the second part after '='
-        return productId
+        return productId 
       })
+      await paymentHelper.checkAmount(productIds,totalPrice)
 
       const que = `${queryString}&student=${student}`
       const merchantTransactionId = paymentHelper.generateTransactionId()
@@ -116,7 +117,7 @@ async getDetails(req, res) {
         const paymentDetail = {
           user: student,
           merchantTransactionId: merchantTransactionId,
-          amount: totalPrice,
+          amount: totalPrice ,
           email: decodedToken.email,
           courseBought: productIds
         }
@@ -155,7 +156,7 @@ async getDetails(req, res) {
         console.log(response.data)///
         await paymentHelper.addCourse(student, course)
         await paymentHelper.updateStatus(merchantTransactionId, "Success")
-
+        await paymentHelper.studentEnrolled(student, course)
 
         return res.status(200).send({ success: true, message: "Payment Success" });
       } else if (response.data.success === false && response.data.code != "PAYMENT_PENDING") {

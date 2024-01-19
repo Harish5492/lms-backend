@@ -140,7 +140,8 @@ class courseController {
         throw {message : "Please buy course first"}
       }
     }
-    catch (error) {
+    catch (error) { 
+      console.log(error)
       res.status(500).send(error );
     }
 
@@ -181,7 +182,10 @@ class courseController {
     try {
       console.log("inside delete a course")
       console.log(req.params.id)
-       
+      const findCourse = await Course.findById({ _id: req.params.id })
+
+      if(findCourse.studentsEnrolled.length>0) throw {message:`Can Not Delete, ${findCourse.studentsEnrolled.length} Students are Enrolled This Course`,status:false}
+
       const a = await Course.findByIdAndDelete({ _id: req.params.id })
       console.log(a, "a")
       const del = await Lesson.deleteMany({ course: req.params.id }, (error, result) => {

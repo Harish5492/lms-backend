@@ -301,44 +301,37 @@ class UserController {
   //       res.status(500).send(error);
   //     }
   //   }
-  async myCourses(req, res) {
-    try {
-      console.log("inside myCourses");
-      const { decodedToken } = req.body;
-      // console.log("id", decodedToken.id);
-      const courses = await model.findOne({ _id: decodedToken.id }, 'courseEnrolled');
-      // console.log("Courses", courses);
-      const myCourses = [];
-      for (const data of courses.courseEnrolled) {
-        const Allcourse = await Course.findById({ _id: data });
-        // console.log(Allcourse);
-        myCourses.push(Allcourse);
-      }
-      // console.log("asdfghjkl;kjhgfdrtfgyhuiytryu",myCourses);
-      res.json({ message: "Your courses are :- ", myCourses, status: true });
-    } catch (error) {
-      res.status(404).json(error.message);
-  
-    }}
   // async myCourses(req, res) {
   //   try {
   //     console.log("inside myCourses");
   //     const { decodedToken } = req.body;
   //     // console.log("id", decodedToken.id);
-  //     const courses = await model.findOne({ _id: decodedToken.id} ,'courseEnrolled').populate('courseEnrolled');
+  //     const courses = await model.findOne({ _id: decodedToken.id }, 'courseEnrolled');
   //     // console.log("Courses", courses);
-  //     // const myCourses = [];
-  //     // for (const data of courses.courseEnrolled) {
-  //     //   const Allcourse = await Course.findById({ _id: data });
-  //     //   // console.log(Allcourse);
-  //     //   myCourses.push(Allcourse);
-  //     // }
+  //     const myCourses = [];
+  //     for (const data of courses.courseEnrolled) {
+  //       const Allcourse = await Course.findById({ _id: data });
+  //       // console.log(Allcourse);
+  //       myCourses.push(Allcourse);
+  //     }
   //     // console.log("asdfghjkl;kjhgfdrtfgyhuiytryu",myCourses);
-  //     res.json({ message: "Your courses are :- ", courses, status: true });
+  //     res.json({ message: "Your courses are :- ", myCourses, status: true });
   //   } catch (error) {
   //     res.status(404).json(error.message);
-  //   }
-  // }
+  
+    // }}
+  async myCourses(req, res) {
+    try {
+      console.log("inside myCourses");
+      const { decodedToken } = req.body;
+      // console.log("id", decodedToken.id);
+      const courses = await model.findOne({ _id: decodedToken.id} ,'courseEnrolled').populate('courseEnrolled')
+      const myCourses = courses.courseEnrolled
+      res.json({ message: "Your courses are :- ", myCourses, status: true });
+    } catch (error) {
+      res.status(404).json(error.message);
+    }
+  }
 
   async getUserbyID(req, res) {
     try {
@@ -368,7 +361,7 @@ class UserController {
       if (!decodedToken.id) throw { message: 'No user Found', status: false }
       const userData = await model
         .findOne({ _id: decodedToken.id })
-        .select('firstName lastName email userName phoneNumber created_on courseEnrolled')
+        .select('firstName lastName email userName phoneNumber created_on courseEnrolled affilliationLinkRequested')
         .exec();
       const length = userData.courseEnrolled.length
       if (!userData) throw { message: 'No email Found', status: false }

@@ -1,6 +1,7 @@
 const affiliateMarketing = require('../models/affiliatemodel')
 const affiliateRequest = require('../models/affiliateRequestmodel')
 const { Course } = require('../models/coursemodel');
+const model = require('../models/usermodel');
 const validStatus = ['Success', 'Failure', 'Pending'];
 const CryptoJS = require("crypto-js");
 const Helper = require('../helper/index');
@@ -59,8 +60,17 @@ class affiliate {
     async affiliationRequest(req, res) {
         try {
             const { decodedToken } = req.body;
+            const check = await model.findById(decodedToken.id,'affilliationLinkRequested')
+            
+            if(!check.affilliationLinkRequested) throw {message: "already requested", status:false}
+
             console.log(decodedToken)
             await affiliateRequest.create({ requestorID: decodedToken.id, requestorEmail: decodedToken.email });
+
+            await model.findByIdAndUpdate(
+                decodedToken.id,
+                {$set : {affilliationLinkRequested : false}}
+                )
 
             res.json({ message: "Request Sent", status: true })
 

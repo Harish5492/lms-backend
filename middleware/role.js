@@ -17,7 +17,7 @@ async isSubAdmin (req, res, next) {
     try{
      console.log("inside isSubAdmin")
      const { decodedToken } = req.body
-     if (decodedToken.role !== 'subAdmin') throw { message: "only Sub admin can access", status: false };
+     if (decodedToken.role !== 'subAdmin' && decodedToken.role!== 'admin') throw { message: "only admin and sub admin can access", status: false };
     next()
     }
     catch(err) {

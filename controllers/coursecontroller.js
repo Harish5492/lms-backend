@@ -1,13 +1,13 @@
 // const coursemodel = require('../models/coursemodel')
 const model = require('../models/usermodel');
 const { Course, Lesson } = require('../models/coursemodel');
-const courseRouter = require('../routers/course.router');
+
 
 
 class courseController {
 
   /**
-  * @function courseAdd
+  * @function courseAdd   
   * @param  req 
   * @param  res 
   * @returns users

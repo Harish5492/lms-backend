@@ -1,18 +1,19 @@
 const billingRouter = require('express').Router();
-const billingController = require('../controllers/billingcontroller')
+const Controller = require('../controllers/index')
+const { BillingController} = Controller.module
 const authMiddleware = require('../middleware/authenticate');
 const role = require('../middleware/role')
 const { validateSignup, handleValidationErrors } = require('../middleware/expressvalidator');
 
-billingRouter.post('/billing',validateSignup[4],handleValidationErrors,billingController.billingDetails)
+billingRouter.post('/billing',validateSignup[4],handleValidationErrors,BillingController.billingDetails)
 
-billingRouter.get('/payment/getDetails',authMiddleware,role.isAdmin,billingController.getDetails)
-// billingRouter.get('/payment/getAllDetails',billingController.getAllDetails)
+// billingRouter.get('/payment/getDetails',authMiddleware,role.isAdmin,BillingController.getDetails)
+// billingRouter.get('/payment/getAllDetails',BillingController.getAllDetails)
 
-billingRouter.post('/payment',authMiddleware,billingController.payment)
-billingRouter.get('/payment/checkStatus/:txnId',billingController.checkStatus)
+billingRouter.post('/payment',authMiddleware,BillingController.payment)
+billingRouter.get('/payment/checkStatus/:txnId',BillingController.checkStatus)
 
-billingRouter.delete('/payment/deleteMany/:id',billingController.deleteMany)
+// billingRouter.delete('/payment/deleteMany/:id',BillingController.deleteMany)
 
 
 module.exports = billingRouter;

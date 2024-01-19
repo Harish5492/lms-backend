@@ -1,10 +1,10 @@
 const referalRouter = require('express').Router();
-const referralController = require('../controllers/refferalcontroller');
+const Controller = require('../controllers/index')
+const { ReferalController} = Controller.module
 const authMiddleware = require('../middleware/authenticate');
-const role = require('../middleware/role')
 
-referalRouter.get('/referalCode',authMiddleware,referralController.referalCode);
-referalRouter.post('/applyReferalCode',authMiddleware,referralController.applyReferalCode)
+referalRouter.get('/referalCode',authMiddleware,ReferalController.referalCode);
+referalRouter.post('/applyReferalCode',authMiddleware,ReferalController.applyReferalCode)
 
 
 module.exports = referalRouter

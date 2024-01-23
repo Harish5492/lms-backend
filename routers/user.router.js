@@ -14,9 +14,9 @@ userRouter.delete('/removeUser/:id', UserController.removeUser);
 userRouter.put('/forgotPassword/:email', validateSignup[4], validateSignup[5], handleValidationErrors, UserController.forgotPassword);
 userRouter.get('/profile', authMiddleware, UserController.profile);
 
-
+ 
 userRouter.post('/changePassword',validateSignup[5],validateSignup[6],handleValidationErrors,UserController.updatePassword); 
-userRouter.get('/getUserbyID/:id', UserController.getUserbyID);
+
 userRouter.get('/myCourses',authMiddleware,UserController.myCourses);
 
 

@@ -150,6 +150,7 @@ class courseController {
     try {
 
       console.log("getAllCourses API has been accessed")
+      const {decodedToken} = req.body
       const page = parseInt(req.query.page) || 1;
       const itemsPerPage = parseInt(req.query.itemsPerPage) || 12;
       const skip = (page - 1) * itemsPerPage;

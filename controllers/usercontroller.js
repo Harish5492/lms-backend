@@ -277,7 +277,7 @@ class UserController {
         throw { message: 'Invalid Login Credentials', status: false };
       }
       const token = jwt.sign({ email: user.email, id: user._id, role: user.role }, key, { expiresIn: '10h' });
-      return res.send({ token, status: true });
+      return res.send({ token, status: true,role: user.role });
     } catch (error) {
       res.json({ error, status: false });
     }

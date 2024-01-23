@@ -1,5 +1,5 @@
 const user = require('../models/usermodel');
-
+const mongoose = require('mongoose')
 const payment = require('../models/payment.model')
 const { Course } = require('../models/coursemodel')
 const crypto = require('crypto');
@@ -66,7 +66,7 @@ class paymentHelper {
       merchantId: paymentMerchantId,
       merchantUserId: paymentMerchantUserId,
       merchantTransactionId: merchantTransactionId,
-      amount: totalPrice,
+      amount: totalPrice*100,
       redirectUrl: `http://10.10.2.82:3000/user/payment/checkStatus/${merchantTransactionId}?${que}`,
       // redirectUrl: `http://10.10.2.82:8000/user/payment/checkStatus/${merchantTransactionId}?${ur}`,
       redirectMode: 'REDIRECT',
@@ -118,7 +118,7 @@ class paymentHelper {
 //   } 
 
 async checkAmount(productIds, totalPrice) {
-  console.log("inside checkamount", productIds, totalPrice);
+  console.log("inside checkamount", productIds, 'totalPrice', totalPrice);
 
   // Fetch courses by their IDs
   const courses = await Course.find({ _id: { $in: productIds } }, 'price');
@@ -129,21 +129,25 @@ async checkAmount(productIds, totalPrice) {
     return total + (isNaN(amount) ? 0 : amount);
   }, 0);
 
-  console.log(totalAmount);
+  console.log('totalAmount',totalAmount);
+  console.log('typeoftotalAmount',typeof totalAmount);
+  console.log('typeoftotalPrice',typeof totalPrice);
 
-  const discountPercentage = 10;
-  const discountedTotalAmount = parseFloat((totalAmount - (totalAmount * (discountPercentage / 100))).toFixed(2));
+  // const discountPercentage = 10;
+  // const discountedTotalAmount = parseFloat((totalAmount - (totalAmount * (discountPercentage / 100))).toFixed(2));
 
-  // Function to remove trailing zeros after the decimal point
-  const removeTrailingZeros = (num) => parseFloat(num.toString().replace(/(\.[0-9]*[1-9])0+$|\.0*$/, '$1'));
+  // // Function to remove trailing zeros after the decimal point
+  // const removeTrailingZeros = (num) => parseFloat(num.toString().replace(/(\.[0-9]*[1-9])0+$|\.0*$/, '$1'));
 
-  const formattedDiscountedTotalAmount = removeTrailingZeros(discountedTotalAmount);
-  const formattedTotalPrice = removeTrailingZeros(totalPrice);
+  // const formattedDiscountedTotalAmount = removeTrailingZeros(discountedTotalAmount);
+  // const formattedTotalPrice = removeTrailingZeros(totalPrice);
 
   // Use Math.abs() to handle potential floating-point precision issues
-  if (formattedTotalPrice !== totalAmount && Math.abs(formattedTotalPrice - formattedDiscountedTotalAmount) > 0.01) {
+  if (totalPrice < 0.9*totalAmount ) {
+    console.warn("Amount Mismatch or Invalid Discount - Warning sent to admin");
     throw { message: "Amount Mismatch or Invalid Discount", status: false };
   }
+
 }
  
   async addPayment(paymentDetail) { 
@@ -164,19 +168,52 @@ async checkAmount(productIds, totalPrice) {
     console.log("payment Added Successfully")
   }
 
-  async studentEnrolled(student, coursesArray) {
-    console.log("inside studentEnrolled")
-    for (const courseId of coursesArray) {
+  
+async  studentEnrolled(student, coursesArray) {
+  console.log("inside studentEnrolled", student, coursesArray);
 
-      const result = await Course.findOneAndUpdate(
-        { _id: courseId },
+  for (const courseId of coursesArray) {
+    // Check if courseId is a valid ObjectI
+    d
+    if (!mongoose.Types.ObjectId.isValid(courseId)) {
+      console.error(`Invalid courseId: ${courseId}`);
+      continue; // Skip to the next iteration
+    }
+
+    try {
+      const result = await Course.findByIdAndUpdate(
+        mongoose.Types.ObjectId(courseId),
         { $push: { studentsEnrolled: student } },
         { new: true }
       );
-  
+
       console.log(`Student enrolled successfully in course ${courseId}`);
       console.log("Course: ", result);
+    } catch (error) {
+      console.error(error.message);
     }
+  }
+}
+
+  async alreadyHaveCourse(decodedToken,productIds){
+    // const courses = await Course.find({ studentsEnrolled: decodedToken.id }, 'studentsEnrolled');
+   
+  const courses = await Course.find({ _id: { $in: productIds } }, 'studentsEnrolled');
+    let array=[];
+          console.log("yoyohoneysingh", courses);
+          
+          if (courses && courses.length > 0) {
+            // Iterate over each course and check if decodedToken.id is present in studentsEnrolled
+            for (const course of courses) {
+              if (course.studentsEnrolled.includes(decodedToken.id)) {
+                array.push(course._id)
+              }
+            }
+            console.log("Array",array)
+               }
+           
+               if(array.length)  throw  ({ message: "You have already bought one of the course", status: false });
+       
   }
 
 }

@@ -1,8 +1,11 @@
 // const { Number } = require('twilio/lib/twiml/VoiceResponse');
 const billing = require('../models/billingmodel')
 const payment = require('../models/payment.model')
+const { Course } = require('../models/coursemodel')
+const model = require('../models/usermodel')
 const axios = require('axios');
-const Helper = require('../helper/index')
+const Helper = require('../helper/index');
+const { decode } = require('jsonwebtoken');
 const { paymentHelper } = Helper.module
 require("dotenv").config();
 // const paymentMerchantId = process.env.MERCHANTID
@@ -21,9 +24,10 @@ class BillingController {
     }
   }
 
-async getDetails(req, res) {
-  try {
+  async getDetails(req, res) {
+    try {
       console.log("inside get payment Details");
+      const { decodedToken } = req.body
 
       const page = parseInt(req.query.page) || 1;
       const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
@@ -34,26 +38,26 @@ async getDetails(req, res) {
 
       // Use the regex in the query to filter the data
       let details = await payment.find({
-          $or: [
-              { email: { $regex: new RegExp(searchQuery, 'i') } },
-              { amount: { $regex: new RegExp(searchQuery, 'i') } },
-              { status: { $regex: new RegExp(searchQuery, 'i') } },
-            
-          ]
+        $or: [
+          { email: { $regex: new RegExp(searchQuery, 'i') } },
+          { amount: { $regex: new RegExp(searchQuery, 'i') } },
+          { status: { $regex: new RegExp(searchQuery, 'i') } },
+
+        ]
       })
-      .skip(skip)
-      .limit(itemsPerPage)
-      .exec();
-      console.log("details",details)
+        .skip(skip)
+        .limit(itemsPerPage)
+        .exec();
+      console.log("details", details)
 
       let totalRecords = await payment.countDocuments({
-            $or: [
-                { email: { $regex: new RegExp(searchQuery, 'i') } },
-                { amount: { $regex: new RegExp(searchQuery, 'i') } },
-                { status: { $regex: new RegExp(searchQuery, 'i') } },
-              
-            ]
-        })
+        $or: [
+          { email: { $regex: new RegExp(searchQuery, 'i') } },
+          { amount: { $regex: new RegExp(searchQuery, 'i') } },
+          { status: { $regex: new RegExp(searchQuery, 'i') } },
+
+        ]
+      })
 
       // console.log("before if")
       // if(details.length==0){
@@ -66,16 +70,19 @@ async getDetails(req, res) {
       //  totalRecords = await payment.countDocuments()
 
       // }
-         
 
-      res.json({ status: true, details, totalRecords });
-  } catch (error) {
-      res.status(500).json({
-          message: error.message,
-          success: false
+
+      res.json({
+        status: true, details, totalRecords,
+        role: decodedToken.id
       });
+    } catch (error) {
+      res.status(500).json({
+        message: error.message,
+        status: false
+      });
+    }
   }
-}
 
 
 
@@ -86,52 +93,52 @@ async getDetails(req, res) {
 
       const { totalPrice, queryString, decodedToken } = req.body
       const student = decodedToken.id
-      // const courseId = req.query.courseId;
-      // console.log(courseId)
-
-      // // Check if the user is already enrolled in the course
-      // const user = await model.findOne({ _id: student, courseEnrolled: courseId });
-      // if (user) {
-      //   return res.status(400).send({
-      //     message: "Course is already enrolled. Payment cannot be initiated.",
-      //     success: false,
-      //   });
-      // }
-  
+      console.log("studentid",student)
       const queryParams = queryString.split('&');
       const productIds = queryParams.map(param => {
         const [, productId] = param.split('='); // Using destructuring to get the second part after '='
-        return productId 
+        return productId
+        
       })
-      await paymentHelper.checkAmount(productIds,totalPrice)
+      console.log("id",productIds)
 
-      const que = `${queryString}&student=${student}`
-      const merchantTransactionId = paymentHelper.generateTransactionId()
-      const data = paymentHelper.getData(merchantTransactionId, totalPrice, que)
-      const { checksum, payloadMain } = paymentHelper.hashing(data)
-      const options = paymentHelper.getOptions(checksum, payloadMain)
-      axios.request(options).then(function (response) {
-        console.log("inside axios request")
-        console.log(response.data.data.instrumentResponse.redirectInfo.url)
+      // const alreadyCourse = await Course.findOne({ studentsEnrolled: decodedToken.id }, 'studentsEnrolled')
+      // console.log("yoyohoneysingh", alreadyCourse)
+      // if (alreadyCourse.studentsEnrolled.includes(decodedToken.id)) {
+      //   throw { message: "You have already bought this course", status: false };
+      // }
+
+      await paymentHelper.alreadyHaveCourse(decodedToken, productIds)
+      await paymentHelper.checkAmount(productIds, totalPrice)
+
+        const que = `${queryString}&student=${student}`
+        const merchantTransactionId = paymentHelper.generateTransactionId()
+        const data = paymentHelper.getData(merchantTransactionId, totalPrice, que)
+        const { checksum, payloadMain } = paymentHelper.hashing(data)
+        const options = paymentHelper.getOptions(checksum, payloadMain)
 
         const paymentDetail = {
           user: student,
           merchantTransactionId: merchantTransactionId,
-          amount: totalPrice ,
+          amount: totalPrice,
           email: decodedToken.email,
           courseBought: productIds
         }
         console.log(paymentDetail)
-        paymentHelper.addPayment(paymentDetail)
+        await paymentHelper.addPayment(paymentDetail)
 
-        res.send(response.data.data.instrumentResponse.redirectInfo.url)
-        // res.send({message:'successful'})
-      })
+        axios.request(options).then(function (response) {
+          console.log("inside axios request")
+          console.log(response.data.data.instrumentResponse.redirectInfo.url)
+
+          res.send(response.data.data.instrumentResponse.redirectInfo.url)
+          // res.send({message:'successful'})
+        })
         .catch(function (error) {
           console.error(error);
           throw error;
         });
-      
+
     } catch (error) {
       res.status(500).send({
         message: error.message,
@@ -139,7 +146,7 @@ async getDetails(req, res) {
       })
     }
   }
- 
+
 
   async checkStatus(req, res) {
     console.log("query", req.query)

@@ -20,7 +20,7 @@ class affiliate {
             const stat = await affiliateRequest.findOne({ requestorID: decodedToken.id })
                 .sort({ requested_on: -1 }) // Sort in descending order based on createdAt (replace with your actual timestamp field)
                 .exec()
-            console.log(stat,"fffffff")
+            console.log(stat, "fffffff")
 
             if (stat) {
                 if (stat.requestStatus === 'Pending') {
@@ -57,20 +57,46 @@ class affiliate {
         }
     }
 
+    async courseLink(req, res) {
+        try {
+            console.log("inside CourseLink")
+            const { decodedToken } = req.body
+            const { id } = req.params
+            const Data = await Course.findById(id)
+            const courseData = [Data.id, Data.title, Data.instructor, decodedToken.id]
+            const token = CryptoJS.AES.encrypt(JSON.stringify(courseData), key).toString();
+            await affiliateMarketing.create({ courseId: Data._id, affiliateLink: token, affiliator: decodedToken.id, })
+            let CryDtoken = CryptoJS.AES.decrypt(token, key);
+            let check = CryDtoken.toString(CryptoJS.enc.Utf8);
+            let decryptedData = JSON.parse(check);
+            console.log("final is here", decryptedData);
+            // const uniqueLink = `http://10.10.2.30:3000/courses/${Data.id}/user/${decodedToken.id}`;
+
+
+            res.json({ message: "token sent", status: true, token, uniqueLink })
+        }
+        catch (error) {
+            res.status(500).send(error)
+        }
+
+
+
+    }
+
     async affiliationRequest(req, res) {
         try {
             const { decodedToken } = req.body;
-            const check = await model.findById(decodedToken.id,'affilliationLinkRequested')
-            
-            if(!check.affilliationLinkRequested) throw {message: "already requested", status:false}
+            const check = await model.findById(decodedToken.id, 'affilliationLinkRequested')
+
+            if (!check.affilliationLinkRequested) throw { message: "already requested", status: false }
 
             console.log(decodedToken)
             await affiliateRequest.create({ requestorID: decodedToken.id, requestorEmail: decodedToken.email });
 
             await model.findByIdAndUpdate(
                 decodedToken.id,
-                {$set : {affilliationLinkRequested : false}}
-                )
+                { $set: { affilliationLinkRequested: false } }
+            )
 
             res.json({ message: "Request Sent", status: true })
 
@@ -82,17 +108,17 @@ class affiliate {
         try {
             const { decodedToken } = req.body;
             console.log(decodedToken);
-        
+
             const page = parseInt(req.query.page) || 1;
             const itemsPerPage = parseInt(req.query.itemsPerPage) || 10;
             const skip = (page - 1) * itemsPerPage;
-        
+
             // Extract the search query from the request
             const searchQuery = req.query.search || '';
-        
+
             // Create a case-insensitive regular expression for searching
             const searchRegex = new RegExp(searchQuery, 'i');
-        
+
             const allRequests = await affiliateRequest.find({
                 // Add the case-insensitive search condition
                 $or: [
@@ -102,12 +128,12 @@ class affiliate {
                     // Add more fields as needed
                 ]
             })
-            .skip(skip)
-            .limit(itemsPerPage)
-            .exec();
-        
+                .skip(skip)
+                .limit(itemsPerPage)
+                .exec();
+
             console.log("allRequests", allRequests);
-        
+
             const totalRequests = await affiliateRequest.countDocuments({
                 // Add the same case-insensitive search condition for counting total documents
                 $or: [
@@ -117,9 +143,9 @@ class affiliate {
                     // Add more fields as needed
                 ]
             });
-        
+
             res.json({ message: "these are all requests", status: true, allRequests, totalRequests });
-        
+
         } catch (error) {
             res.status(500).send(error);
         }
@@ -137,7 +163,7 @@ class affiliate {
             console.log("Check", check)
             if (check.requestStatus !== 'Pending') throw { message: "Unauthorized task" }
 
-            await referalAndAffiliate.reqAction(id, status, remarks,decodedToken)
+            await referalAndAffiliate.reqAction(id, status, remarks, decodedToken)
             res.json({ message: "Updated", status: true })
 
         } catch (error) {

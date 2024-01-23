@@ -14,6 +14,7 @@ app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());
 // app.use('/user', () => Api);
+
 app.use('/user', Api.userRouter); 
 app.use('/user', Api.otpRouter); 
 app.use('/user', Api.billingRouter); 
@@ -22,6 +23,11 @@ app.use('/user', Api.referalRouter);
 app.use('/user', Api.affiliateRouter);
 
 app.use('/admin/adminArea', Api.adminRouter); 
+
+app.use((err, req, res, next) => {
+  console.error(err.stack);
+  res.status(500).send('Something went wrong!');
+});
 
 // const cron = require('node-cron');
 // function logMessage() {

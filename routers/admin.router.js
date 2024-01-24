@@ -20,6 +20,7 @@ adminRouter.get('/profile', authMiddleware, UserController.profile);
 adminRouter.get('/getUserbyID/:id',authMiddleware, role.isAdmin, UserController.getUserbyID);
 adminRouter.post('/addCourse',authMiddleware, role.isAdmin, CourseController.addCourse)
 adminRouter.post('/addLesson',authMiddleware, role.isAdmin, CourseController.addLesson)
+adminRouter.get('/courseLink/:id',authMiddleware,role.isSubAdmin,AffiliateController.courseLink)
 adminRouter.get('/allCourses', CourseController.getAllCourses)
 adminRouter.get('/getCourse/:id', CourseController.getCourseById)
 adminRouter.get('/allCourses/:id',authMiddleware, CourseController.getAllLesson)

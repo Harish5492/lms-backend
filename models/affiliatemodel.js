@@ -2,7 +2,8 @@ const mongoose = require('mongoose')
 
 const affiliate = new mongoose.Schema({
     courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' },
-    affiliateLink : {type: String},
+    affiliateToken : {type: String},
+    rewards : {type: Number,default:0},
     affiliator : { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     created_on: { type: Date, default: Date.now } 
 })

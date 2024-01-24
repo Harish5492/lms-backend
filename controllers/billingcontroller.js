@@ -88,10 +88,9 @@ class BillingController {
 
 
   async payment(req, res) {
-    console.log("inside payment")
+    console.log("inside payment",req.body)
     try {
-
-      const { totalPrice, queryString, decodedToken } = req.body
+      const { totalPrice, queryString, decodedToken, affiliateToken } = req.body
       const student = decodedToken.id
       console.log("studentid",student)
       const queryParams = queryString.split('&');
@@ -108,10 +107,18 @@ class BillingController {
       //   throw { message: "You have already bought this course", status: false };
       // }
 
+      if(affiliateToken){ 
+       await paymentHelper.addRewards(affiliateToken,productIds,totalPrice)
+      }
+      console.log("affiliateToken.....",affiliateToken)
       await paymentHelper.alreadyHaveCourse(decodedToken, productIds)
       await paymentHelper.checkAmount(productIds, totalPrice)
 
-        const que = `${queryString}&student=${student}`
+        // const que = `${queryString}&student=${student}`
+        // ... (previous code)
+       const que = `${queryString}&student=${student}&affiliateToken=${affiliateToken}&totalPrice=${totalPrice}`; 
+
+
         const merchantTransactionId = paymentHelper.generateTransactionId()
         const data = paymentHelper.getData(merchantTransactionId, totalPrice, que)
         const { checksum, payloadMain } = paymentHelper.hashing(data)
@@ -150,7 +157,7 @@ class BillingController {
 
   async checkStatus(req, res) {
     console.log("query", req.query)
-    const { course, student } = req.query
+    const { course, student,affiliateToken,totalPrice } = req.query
     const merchantTransactionId = req.params['txnId']
     const merchantId = paymentMerchantId
     const { checksum } = paymentHelper.checkHashing(merchantTransactionId)
@@ -161,9 +168,12 @@ class BillingController {
       console.log("inside")
       if (response.data.success === true && response.data.code != "PAYMENT_PENDING") {
         console.log(response.data)///
+
         await paymentHelper.addCourse(student, course)
         await paymentHelper.updateStatus(merchantTransactionId, "Success")
         await paymentHelper.studentEnrolled(student, course)
+        await paymentHelper.updateReward(affiliateToken,totalPrice)
+        console.log("insideUpdateCheck",affiliateToken)
 
         return res.status(200).send({ success: true, message: "Payment Success" });
       } else if (response.data.success === false && response.data.code != "PAYMENT_PENDING") {

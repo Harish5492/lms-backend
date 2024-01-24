@@ -63,25 +63,40 @@ class affiliate {
             const { decodedToken } = req.body
             const { id } = req.params
             const Data = await Course.findById(id)
-            const courseData = [Data.id, Data.title, Data.instructor, decodedToken.id]
+            const courseData = { course_id: Data.id, course_title: Data.title, course_instructor: Data.instructor, user_id: decodedToken.id }
             const token = CryptoJS.AES.encrypt(JSON.stringify(courseData), key).toString();
-            await affiliateMarketing.create({ courseId: Data._id, affiliateLink: token, affiliator: decodedToken.id, })
-            let CryDtoken = CryptoJS.AES.decrypt(token, key);
-            let check = CryDtoken.toString(CryptoJS.enc.Utf8);
-            let decryptedData = JSON.parse(check);
-            console.log("final is here", decryptedData);
+            await affiliateMarketing.create({ courseId: Data._id, affiliateLink: token, affiliator: decodedToken.id  })
+            // let CryDtoken = CryptoJS.AES.decrypt(token, key);
+            // let check = CryDtoken.toString(CryptoJS.enc.Utf8);
+            // let decryptedData = JSON.parse(check);
+            // console.log("final is here", decryptedData);
             // const uniqueLink = `http://10.10.2.30:3000/courses/${Data.id}/user/${decodedToken.id}`;
 
-
-            res.json({ message: "token sent", status: true, token, uniqueLink })
+            console.log("token",token)
+            res.json({ message: "token sent", status: true, token })
         }
         catch (error) {
             res.status(500).send(error)
         }
-
-
-
     }
+
+    // async decodeToken(req,res){
+    //     try{ 
+    //         console.log("inside decodeToken")
+    //         const {affiliateToken} = req.body
+    //         let CryDtoken = CryptoJS.AES.decrypt(affiliateToken, key);
+    //         let check = CryDtoken.toString(CryptoJS.enc.Utf8);
+    //         let decryptedData = JSON.parse(check);
+    //         console.log("final is here", decryptedData);
+    //         res.json({message:"token verified",decryptedData})
+
+    //     }
+    //     catch(error){
+    //         res.status(500).send(error)
+
+    //     }
+
+    // }
 
     async affiliationRequest(req, res) {
         try {

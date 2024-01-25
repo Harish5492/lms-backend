@@ -100,6 +100,7 @@ class BillingController {
         
       })
       console.log("id",productIds)
+      console.log("affiliateTokenaffiliateTokenaffiliateToken",affiliateToken)
 
       // const alreadyCourse = await Course.findOne({ studentsEnrolled: decodedToken.id }, 'studentsEnrolled')
       // console.log("yoyohoneysingh", alreadyCourse)
@@ -107,22 +108,23 @@ class BillingController {
       //   throw { message: "You have already bought this course", status: false };
       // }
 
-      if(affiliateToken){ 
-       await paymentHelper.addRewards(affiliateToken,productIds,totalPrice)
-      }
+      // if(affiliateToken){ 
+      //  await paymentHelper.addRewards(affiliateToken,productIds,totalPrice)
+      // }
       console.log("affiliateToken.....",affiliateToken)
       await paymentHelper.alreadyHaveCourse(decodedToken, productIds)
       await paymentHelper.checkAmount(productIds, totalPrice)
 
         // const que = `${queryString}&student=${student}`
         // ... (previous code)
-       const que = `${queryString}&student=${student}&affiliateToken=${affiliateToken}&totalPrice=${totalPrice}`; 
-
+        const encodedToken = encodeURIComponent(affiliateToken);
+        const que = `${queryString}&student=${student}&affiliateToken=${encodedToken}&totalPrice=${totalPrice}`;
+        
 
         const merchantTransactionId = paymentHelper.generateTransactionId()
         const data = paymentHelper.getData(merchantTransactionId, totalPrice, que)
         const { checksum, payloadMain } = paymentHelper.hashing(data)
-        const options = paymentHelper.getOptions(checksum, payloadMain)
+        const options = paymentHelper.getOptions(checksum, payloadMain,affiliateToken)
 
         const paymentDetail = {
           user: student,
@@ -157,11 +159,16 @@ class BillingController {
 
   async checkStatus(req, res) {
     console.log("query", req.query)
-    const { course, student,affiliateToken,totalPrice } = req.query
+    const { course, student,totalPrice } = req.query
     const merchantTransactionId = req.params['txnId']
+    const affiliateToken = decodeURIComponent(req.query.affiliateToken);
+
+   
+    // const affiliateToken ="U2FsdGVkX19NXifO6j6t+YUX/K/Uc/Xtar6mNBCdYnfBKdqj9If9S6p13/Lyt0GQibdKR7p6blEc0ugJcHeLssYZ9JE7NnRIEe7/vJ38qjkp2rw5TCF8tdJeIaNFhogPz2GQjRaPDfek58gfVKlLGRmoIiwe7ByEyzVSB8+2cxAZto7Ra6j2cIX9h6V0kM8u2r5J9Fl/EGcFbTVxapZR78WpGjxQn5ksrOqe7wLvI0dtZ3qyhMH9lBdA9QI+wAAu"
     const merchantId = paymentMerchantId
     const { checksum } = paymentHelper.checkHashing(merchantTransactionId)
     console.log(checksum)
+    console.log("affiliateTokenaffiliateTokenaffiliateTokenaffiliateTokenaffiliateTokenaffiliateTokenaffiliateToken",affiliateToken)
     const options = paymentHelper.getCheckOptions(merchantId, merchantTransactionId, checksum)
     console.log(options)
     axios.request(options).then(async (response) => {
@@ -172,9 +179,10 @@ class BillingController {
         await paymentHelper.addCourse(student, course)
         await paymentHelper.updateStatus(merchantTransactionId, "Success")
         await paymentHelper.studentEnrolled(student, course)
-        await paymentHelper.updateReward(affiliateToken,totalPrice)
+              if(affiliateToken){ 
+                await paymentHelper.updateReward(affiliateToken,totalPrice)
+                }
         console.log("insideUpdateCheck",affiliateToken)
-
         return res.status(200).send({ success: true, message: "Payment Success" });
       } else if (response.data.success === false && response.data.code != "PAYMENT_PENDING") {
         paymentHelper.updateStatus(merchantTransactionId, "Failure")

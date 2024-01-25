@@ -14,8 +14,8 @@ class referal {
                 .exec()
             if (findCode) {
                 return res.json({ message: "Code Already generated ", status: true, referrelCode: findCode.referrelCode });
-            }
-
+            }  
+ 
             const referrelOwner = decodedToken.id;
 
             const referrelCode = referalAndAffiliate.generateAlphanumericCode();

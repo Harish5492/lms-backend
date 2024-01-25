@@ -62,10 +62,11 @@ class affiliate {
             console.log("inside CourseLink")
             const { decodedToken } = req.body
             const { id } = req.params
+            
             const Data = await Course.findById(id)
             const courseData = { course_id: Data.id, course_title: Data.title, course_instructor: Data.instructor, user_id: decodedToken.id }
             const token = CryptoJS.AES.encrypt(JSON.stringify(courseData), key).toString();
-            await affiliateMarketing.create({ courseId: Data._id, affiliateLink: token, affiliator: decodedToken.id  })
+            await affiliateMarketing.create({ courseId: Data._id, affiliateToken: token, affiliator: decodedToken.id  })
             // let CryDtoken = CryptoJS.AES.decrypt(token, key);
             // let check = CryDtoken.toString(CryptoJS.enc.Utf8);
             // let decryptedData = JSON.parse(check);

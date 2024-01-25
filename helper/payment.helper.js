@@ -87,7 +87,7 @@ class paymentHelper {
       headers: {
         accept: 'application/json',
         'Content-Type': 'application/json',
-        'X-VERIFY': checksum
+        'X-VERIFY': checksum,
       },
       data: {
         request: payloadMain
@@ -221,49 +221,37 @@ class paymentHelper {
 
   async decodeToken(affiliateToken) {
     console.log("inside decodeToken")
-    let affiliateTokenDecoded = (affiliateToken);
 
-let CryDtoken = CryptoJS.AES.decrypt(affiliateTokenDecoded, affiliationKey);
-
-    // let CryDtoken = CryptoJS.AES.decrypt(affiliateToken, affiliationKey);
-    // console.log("inside decodeToken",CryDtoken)
-    // let check = CryDtoken.toString(CryptoJS.enc.Utf8);
-    let check = CryptoJS.enc.Utf8.stringify(CryDtoken);
-
-    // console.log("inside decodeToken",check)
-    let decryptedData;
-try {
-    decryptedData = JSON.parse(check);
+    let CryDtoken = CryptoJS.AES.decrypt(affiliateToken, affiliationKey);
+    let check = CryDtoken.toString(CryptoJS.enc.Utf8);
+    let decryptedData = JSON.parse(check);
     console.log("final is here", decryptedData);
-} catch (error) {
-    console.error("Error parsing decrypted data:", error);
-    decryptedData = null;
-    // Handle the error appropriately, e.g., by returning or logging an error message.
-}
+    // let CryDtoken = CryptoJS.AES.decrypt(affiliateToken, affiliationKey);
+    console.log("inside decodeToken", CryDtoken)
 
     return decryptedData
-    
+
   }
 
-  async addRewards(affiliateToken,productIds) {
-    console.log("inside token ifffff");
-    const decryptedData = await this.decodeToken(affiliateToken);
-    console.log("decryptedData", decryptedData.course_id, productIds[0]);
-    if (decryptedData.course_id == productIds[0]) {
-      console.log("inside other iffffffffff");
-      await affiliatemodel.findOneAndUpdate(
-        { affiliator: decryptedData.user_id },
-        { $set: { rewards: 0 } }
-      );
-    }
-  }
+  // async addRewards(affiliateToken,productIds) {
+  //   console.log("inside token ifffff");
+  //   const decryptedData = await this.decodeToken(affiliateToken);
+  //   console.log("decryptedData", decryptedData.course_id, productIds[0]);
+  //   if (decryptedData.course_id == productIds[0]) {
+  //     console.log("inside other iffffffffff");
+  //     // await affiliatemodel.findOneAndUpdate(
+  //     //   { affiliator: decryptedData.user_id },
+  //     //   { $set: { rewards: 0 } }
+  //     // );
+  //   }
+  // }
 
-  async updateReward(affiliateToken,totalPrice) {
-    console.log("inside updateStatus")
+  async updateReward(affiliateToken, totalPrice) {
+    console.log("inside updateReward")
     const decryptedData = await this.decodeToken(affiliateToken);
     await affiliatemodel.findOneAndUpdate(
       { affiliator: decryptedData.user_id },
-      { $set: { rewards: 0.1 * totalPrice }  }
+      { $set: { rewards: 0.1 * totalPrice } }
     )
     console.log("payment Added Successfully")
   }

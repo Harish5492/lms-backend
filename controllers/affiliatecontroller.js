@@ -1,11 +1,13 @@
-const affiliateMarketing = require('../models/affiliatemodel')
+
 const affiliateRequest = require('../models/affiliateRequestmodel')
 const { Course } = require('../models/coursemodel');
+const {AffiliateMarketings,AffiliateDetails} = require('../models/affiliatemodel')  // Remove curly braces
+
 const model = require('../models/usermodel');
 const validStatus = ['Success', 'Failure', 'Pending'];
 const CryptoJS = require("crypto-js");
 const Helper = require('../helper/index');
-const { paymentHelper } = Helper.module
+
 const { referalAndAffiliate } = Helper.module
 
 
@@ -63,11 +65,30 @@ class affiliate {
             console.log("inside CourseLink")
             const { decodedToken } = req.body
             const { id } = req.params
-            
+            console.log(decodedToken,id)
             const Data = await Course.findById(id)
+            console.log("ssssssssssssssss",Data)
             const courseData = { course_id: Data.id, course_title: Data.title, course_instructor: Data.instructor, user_id: decodedToken.id }
+            console.log("wwwwwwwwwww",courseData)
             const token = CryptoJS.AES.encrypt(JSON.stringify(courseData), key).toString();
-            await affiliateMarketing.create({ courseId: Data._id, affiliateToken: token, affiliator: decodedToken.id  })
+            console.log("pppppppppppppp",token)
+            const document = await AffiliateDetails.create({ courseId: Data._id, affiliateToken: token });
+            console.log("ssssssssssss",document)
+
+            const exists = await AffiliateMarketings.findOne({ affiliator: decodedToken.id })
+
+            if (exists) {
+            await AffiliateMarketings.findOneAndUpdate(
+                { affiliator: decodedToken.id}, // Find the user by ID
+            {
+              $push: { courseDetails : document._id }
+            } )
+
+              } else {
+                await AffiliateMarketings.create({ courseDetails : [document._id ], affiliator: decodedToken.id  })
+
+              }
+
             // let CryDtoken = CryptoJS.AES.decrypt(token, key);
             // let check = CryDtoken.toString(CryptoJS.enc.Utf8);
             // let decryptedData = JSON.parse(check);
@@ -78,7 +99,7 @@ class affiliate {
             res.json({ message: "token sent", status: true, token })
         }
         catch (error) {
-            res.status(500).send(error)
+            res.status(500).send(error.message)
         }
     }
 
@@ -185,42 +206,6 @@ class affiliate {
 
         } catch (error) {
             res.status(500).send(error);
-        }
-    }
-
-    async sendAmountToSubAdmin(req,res){
-        try{
-            const {decodedToken,totalPrice} = req.body
-            const merchantTransactionId = paymentHelper.generateTransactionId()
-            const data = paymentHelper.getData(merchantTransactionId, totalPrice)
-      const { checksum, payloadMain } = paymentHelper.hashing(data)
-      const options = paymentHelper.getOptions(checksum, payloadMain)
-
-      const paymentDetail = {
-        user: student,
-        merchantTransactionId: merchantTransactionId,
-        amount: totalPrice,
-        email: decodedToken.email,
-      }
-      console.log(paymentDetail)
-      await paymentHelper.addPayment(paymentDetail)
-
-      axios.request(options).then(function (response) {
-        console.log("inside axios request")
-        console.log(response.data.data.instrumentResponse.redirectInfo.url)
-
-        res.send(response.data.data.instrumentResponse.redirectInfo.url)
-        // res.send({message:'successful'})
-      })
-        .catch(function (error) {
-          console.error(error);
-          throw error;
-        });
-        }
-        catch(error){
-            console.error("Error Sending Amount",error)
-            res.status(500).send({message: error.message})
-
         }
     }
 

@@ -2,10 +2,10 @@ const user = require('../models/usermodel');
 const mongoose = require('mongoose')
 const payment = require('../models/payment.model')
 const { Course } = require('../models/coursemodel')
-const affiliatemodel = require('../models/affiliatemodel')
+const {AffiliateMarketings,AffiliateDetails} = require('../models/affiliatemodel')
 const crypto = require('crypto');
 const CryptoJS = require("crypto-js");
-require('dotenv').config();
+require('dotenv').config(); 
 const paymentKeyIndex = process.env.PAYMENTKEYINDEX;
 const paymentKey = process.env.PAYMENTKEY
 // const paymentMerchantId = process.env.MERCHANTID
@@ -225,9 +225,9 @@ class paymentHelper {
     let CryDtoken = CryptoJS.AES.decrypt(affiliateToken, affiliationKey);
     let check = CryDtoken.toString(CryptoJS.enc.Utf8);
     let decryptedData = JSON.parse(check);
-    console.log("final is here", decryptedData);
+    // console.log("final is here", decryptedData);
     // let CryDtoken = CryptoJS.AES.decrypt(affiliateToken, affiliationKey);
-    console.log("inside decodeToken", CryDtoken)
+    // console.log("inside decodeToken", CryDtoken)
 
     return decryptedData
 
@@ -247,14 +247,37 @@ class paymentHelper {
   // }
 
   async updateReward(affiliateToken, totalPrice) {
-    console.log("inside updateReward")
+    console.log("inside updateReward");
     const decryptedData = await this.decodeToken(affiliateToken);
-    await affiliatemodel.findOneAndUpdate(
-      { affiliator: decryptedData.user_id },
-      { $set: { rewards: 0.1 * totalPrice } }
-    )
-    console.log("payment Added Successfully")
-  }
+    console.log("asssssssssss", decryptedData);
+
+    const rewards = 0.1 * totalPrice;
+
+    const find = await AffiliateMarketings.findOne({ affiliator: decryptedData.user_id });
+    console.log("FInddidfninfanfinff", find);
+
+    if (find) {
+        const courseDetails = find.courseDetails || [];
+        
+        if (courseDetails.includes(decryptedData.course_id)) {
+            const it = await AffiliateDetails.findById(decryptedData.course_id);
+            
+            if (it) {
+                await AffiliateDetails.findByIdAndUpdate(decryptedData.course_id, {
+                    $set: { rewards: it.rewards + rewards }
+                });
+            }
+        }
+
+        await AffiliateMarketings.findOneAndUpdate(
+            { affiliator: decryptedData.user_id },
+            { $set: { totalRewards: find.totalRewards + rewards } }
+        );
+    }
+
+    console.log("Payment Added Successfully");
+}
+
 
 
 }

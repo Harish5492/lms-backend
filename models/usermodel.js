@@ -12,6 +12,7 @@ const UserDetails = new mongoose.Schema({
   courseEnrolled: [{ type: mongoose.Schema.Types.ObjectId,  ref: 'Course' }], 
   role: { type: String, enum: validRoles, default: 'user'},
   affilliationLinkRequested: {type: Boolean,default: true },
+  rewardRequested: {type: Boolean,default: true },
   created_on: { type: Date, default: Date.now }  
 }); 
 // UserDetails.pre('findOneAndUpdate', function (next) {

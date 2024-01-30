@@ -87,62 +87,53 @@ class BillingController {
 
 
 
+
   async payment(req, res) {
-    console.log("inside payment",req.body)
+    console.log("inside payment", req.body)
     try {
       const { totalPrice, queryString, decodedToken, affiliateToken } = req.body
       const student = decodedToken.id
-      console.log("studentid",student)
+      console.log("studentid", student)
       const queryParams = queryString.split('&');
       const productIds = queryParams.map(param => {
         const [, productId] = param.split('='); // Using destructuring to get the second part after '='
         return productId
-        
+
       })
-      console.log("id",productIds)
-      console.log("affiliateTokenaffiliateTokenaffiliateToken",affiliateToken)
-
-      // const alreadyCourse = await Course.findOne({ studentsEnrolled: decodedToken.id }, 'studentsEnrolled')
-      // console.log("yoyohoneysingh", alreadyCourse)
-      // if (alreadyCourse.studentsEnrolled.includes(decodedToken.id)) {
-      //   throw { message: "You have already bought this course", status: false };
-      // }
-
-      // if(affiliateToken){ 
-      //  await paymentHelper.addRewards(affiliateToken,productIds,totalPrice)
-      // }
-      console.log("affiliateToken.....",affiliateToken)
+      console.log("id", productIds)
+      console.log("affiliateTokenaffiliateTokenaffiliateToken", affiliateToken)
+      console.log("affiliateToken.....", affiliateToken)
       await paymentHelper.alreadyHaveCourse(decodedToken, productIds)
       await paymentHelper.checkAmount(productIds, totalPrice)
 
-        // const que = `${queryString}&student=${student}`
-        // ... (previous code)
-        const encodedToken = encodeURIComponent(affiliateToken);
-        const que = `${queryString}&student=${student}&affiliateToken=${encodedToken}&totalPrice=${totalPrice}`;
-        
+      // const que = `${queryString}&student=${student}`
+      // ... (previous code)
+      const encodedToken = encodeURIComponent(affiliateToken);
+      const que = `${queryString}&student=${student}&affiliateToken=${encodedToken}&totalPrice=${totalPrice}`;
 
-        const merchantTransactionId = paymentHelper.generateTransactionId()
-        const data = paymentHelper.getData(merchantTransactionId, totalPrice, que)
-        const { checksum, payloadMain } = paymentHelper.hashing(data)
-        const options = paymentHelper.getOptions(checksum, payloadMain,affiliateToken)
 
-        const paymentDetail = {
-          user: student,
-          merchantTransactionId: merchantTransactionId,
-          amount: totalPrice,
-          email: decodedToken.email,
-          courseBought: productIds
-        }
-        console.log(paymentDetail)
-        await paymentHelper.addPayment(paymentDetail)
+      const merchantTransactionId = paymentHelper.generateTransactionId()
+      const data = paymentHelper.getData(merchantTransactionId, totalPrice, que)
+      const { checksum, payloadMain } = paymentHelper.hashing(data)
+      const options = paymentHelper.getOptions(checksum, payloadMain, affiliateToken)
 
-        axios.request(options).then(function (response) {
-          console.log("inside axios request")
-          console.log(response.data.data.instrumentResponse.redirectInfo.url)
+      const paymentDetail = {
+        user: student,
+        merchantTransactionId: merchantTransactionId,
+        amount: totalPrice,
+        email: decodedToken.email,
+        courseBought: productIds
+      }
+      console.log(paymentDetail)
+      await paymentHelper.addPayment(paymentDetail)
 
-          res.send(response.data.data.instrumentResponse.redirectInfo.url)
-          // res.send({message:'successful'})
-        })
+      axios.request(options).then(function (response) {
+        console.log("inside axios request")
+        console.log(response.data.data.instrumentResponse.redirectInfo.url)
+
+        res.send(response.data.data.instrumentResponse.redirectInfo.url)
+        // res.send({message:'successful'})
+      })
         .catch(function (error) {
           console.error(error);
           throw error;
@@ -159,16 +150,16 @@ class BillingController {
 
   async checkStatus(req, res) {
     console.log("query", req.query)
-    const { course, student,totalPrice } = req.query
+    const { course, student, totalPrice } = req.query
     const merchantTransactionId = req.params['txnId']
     const affiliateToken = decodeURIComponent(req.query.affiliateToken);
 
-   
+
     // const affiliateToken ="U2FsdGVkX19NXifO6j6t+YUX/K/Uc/Xtar6mNBCdYnfBKdqj9If9S6p13/Lyt0GQibdKR7p6blEc0ugJcHeLssYZ9JE7NnRIEe7/vJ38qjkp2rw5TCF8tdJeIaNFhogPz2GQjRaPDfek58gfVKlLGRmoIiwe7ByEyzVSB8+2cxAZto7Ra6j2cIX9h6V0kM8u2r5J9Fl/EGcFbTVxapZR78WpGjxQn5ksrOqe7wLvI0dtZ3qyhMH9lBdA9QI+wAAu"
     const merchantId = paymentMerchantId
     const { checksum } = paymentHelper.checkHashing(merchantTransactionId)
     console.log(checksum)
-    console.log("affiliateTokenaffiliateTokenaffiliateTokenaffiliateTokenaffiliateTokenaffiliateTokenaffiliateToken",affiliateToken)
+    console.log("affiliateTokenaffiliateTokenaffiliateTokenaffiliateTokenaffiliateTokenaffiliateTokenaffiliateToken", affiliateToken)
     const options = paymentHelper.getCheckOptions(merchantId, merchantTransactionId, checksum)
     console.log(options)
     axios.request(options).then(async (response) => {
@@ -179,11 +170,14 @@ class BillingController {
         await paymentHelper.addCourse(student, course)
         await paymentHelper.updateStatus(merchantTransactionId, "Success")
         await paymentHelper.studentEnrolled(student, course)
-              if(affiliateToken){ 
-                await paymentHelper.updateReward(affiliateToken,totalPrice)
-                }
-        console.log("insideUpdateCheck",affiliateToken)
-        return res.status(200).send({ success: true, message: "Payment Success" });
+        if (affiliateToken) {
+          await paymentHelper.updateReward(affiliateToken, totalPrice)
+        }
+        console.log("insideUpdateCheck", affiliateToken)
+        // return res.status(200).send({ success: true, message: "Payment Success" });
+
+        return res.redirect('http://10.10.2.30:3000/mycourses')
+
       } else if (response.data.success === false && response.data.code != "PAYMENT_PENDING") {
         paymentHelper.updateStatus(merchantTransactionId, "Failure")
         return res.status(400).send({ success: false, message: "Payment Failure" });
@@ -198,6 +192,8 @@ class BillingController {
       });
 
   };
+
+
 
   async deleteMany(req, res) {
     try {

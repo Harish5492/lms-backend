@@ -1,8 +1,11 @@
 const affiliateRequest = require('../models/affiliateRequestmodel')
 const referalmodel = require('../models/referralmodel')
 const model = require('../models/usermodel');
-const sgMail = require('@sendgrid/mail');
 require('dotenv').config();
+const sgMail = require('@sendgrid/mail');
+const accountSid = process.env.accountSid;
+const authToken = process.env.authToken;
+const client = require('twilio')(accountSid, authToken);
 
 class referalAndAffiliate {
 
@@ -28,17 +31,31 @@ class referalAndAffiliate {
         if (!findCode) throw { message: "Invalid Code", status: false }
         if (findCode.expiresAt < new Date) throw { message: "Code Expired", status: false }
     }
- 
-    async checkWhoCreatedCode(decodedToken,code) {
+
+    async checkWhoCreatedCode(decodedToken, code) {
         console.log("inside checkWhoCreatedCode")
-        console.log("id",decodedToken.id)
+        console.log("id", decodedToken.id)
 
-        const check = await referalmodel.findOne({ referrelOwner : decodedToken.id})
+        const check = await referalmodel.findOne({ referrelOwner: decodedToken.id })
 
-        if(!check) return
-        if(check.referrelCode === code) throw {message:"You Can Not Use Your Own Refferal Code",status :false}
+        if (!check) return
+        if (check.referrelCode === code) throw { message: "You Can Not Use Your Own Refferal Code", status: false }
 
-    }  
+    }
+    async sendMessageToSubAdmin() {
+        try {
+            console.log("sendMessageToSubAdmin")
+            client.messages
+                .create({
+                    body: `"Congratulations You are now SubAdmin. Please login on the Dashboard using the same credentials"`,
+                    from: '+12058283986',
+                    to: '+918872512811'
+                })
+        }
+        catch (error) {
+            console.error("Error sending message", error)
+        }
+    }
     async sendEmailToSubAdmin() {
         try {
             sgMail.setApiKey(process.env.SENDGRID_API_KEY);
@@ -54,10 +71,10 @@ class referalAndAffiliate {
             console.log("email sent", msg);
         } catch (error) {
             console.error("Error sending email:", error);
-           
+
         }
     }
-    
+
     async reqAction(id, status, remarks, decodedToken) {
         if (status === 'Success') {
             const updation = await affiliateRequest.findByIdAndUpdate(
@@ -67,7 +84,7 @@ class referalAndAffiliate {
                 },
                 { new: true, runValidators: true }
             );
-    
+
             if (decodedToken.role === 'admin') {
                 const roleChange = await model.findByIdAndUpdate(
                     { _id: updation.requestorID },
@@ -78,11 +95,12 @@ class referalAndAffiliate {
                 );
                 console.log("is change", roleChange);
             }
-    
+
             await this.sendEmailToSubAdmin();
+            await this.sendMessageToSubAdmin();
         }
-    
-    
+
+
         else if (status === 'Failure') {
             if (!remarks) throw "please enter remarks"
             await affiliateRequest.findByIdAndUpdate(

@@ -29,7 +29,7 @@ adminRouter.post('/updateCourse/:id',authMiddleware, role.isAdmin, CourseControl
 adminRouter.post('/addMultipleLesson',authMiddleware,role.isAdmin, CourseController.addMultipleLesson)
 adminRouter.delete('/deleteCourse/:id',authMiddleware,role.isAdmin, CourseController.deleteCourse)
 adminRouter.delete('/deleteLesson/:id',authMiddleware,role.isAdmin, CourseController.deleteLesson)
-
+// adminRouter.post('/amountToSubAdmin',authMiddleware,role.isAdmin,BillingController.amountToSubAdmin)
 
 adminRouter.get('/pendingRequests',authMiddleware,role.isAdmin,AffiliateController.pendingRequests)
 adminRouter.post('/affiliationRequestAction/:id',authMiddleware,role.isAdmin,AffiliateController.affiliationRequestAction)

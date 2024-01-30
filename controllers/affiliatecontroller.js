@@ -5,6 +5,7 @@ const model = require('../models/usermodel');
 const validStatus = ['Success', 'Failure', 'Pending'];
 const CryptoJS = require("crypto-js");
 const Helper = require('../helper/index');
+const { paymentHelper } = Helper.module
 const { referalAndAffiliate } = Helper.module
 
 
@@ -184,6 +185,42 @@ class affiliate {
 
         } catch (error) {
             res.status(500).send(error);
+        }
+    }
+
+    async sendAmountToSubAdmin(req,res){
+        try{
+            const {decodedToken,totalPrice} = req.body
+            const merchantTransactionId = paymentHelper.generateTransactionId()
+            const data = paymentHelper.getData(merchantTransactionId, totalPrice)
+      const { checksum, payloadMain } = paymentHelper.hashing(data)
+      const options = paymentHelper.getOptions(checksum, payloadMain)
+
+      const paymentDetail = {
+        user: student,
+        merchantTransactionId: merchantTransactionId,
+        amount: totalPrice,
+        email: decodedToken.email,
+      }
+      console.log(paymentDetail)
+      await paymentHelper.addPayment(paymentDetail)
+
+      axios.request(options).then(function (response) {
+        console.log("inside axios request")
+        console.log(response.data.data.instrumentResponse.redirectInfo.url)
+
+        res.send(response.data.data.instrumentResponse.redirectInfo.url)
+        // res.send({message:'successful'})
+      })
+        .catch(function (error) {
+          console.error(error);
+          throw error;
+        });
+        }
+        catch(error){
+            console.error("Error Sending Amount",error)
+            res.status(500).send({message: error.message})
+
         }
     }
 

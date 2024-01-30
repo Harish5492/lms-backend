@@ -40,8 +40,8 @@ const validateSignup = [
     .trim()
     .isEmail()
     .withMessage('Invalid email address')
-    .matches(/\.com$|\.org$|\.edu$|\.net$|\.gov$/i)
-    .withMessage('Email must have a .com, .org, .edu, .net, .gov domain'),
+    .matches(/\.com$|\.org$|\.edu$|\.net$|\.gov$|\.in$/i)
+    .withMessage('Email must have a .com, .org, .edu, .net, .gov,.in domain'),
 
   // Validate password
   body('password').isStrongPassword({

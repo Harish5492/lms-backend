@@ -1,6 +1,8 @@
 const affiliateRequest = require('../models/affiliateRequestmodel')
 const referalmodel = require('../models/referralmodel')
 const model = require('../models/usermodel');
+const sgMail = require('@sendgrid/mail');
+require('dotenv').config();
 
 class referalAndAffiliate {
 
@@ -37,8 +39,25 @@ class referalAndAffiliate {
         if(check.referrelCode === code) throw {message:"You Can Not Use Your Own Refferal Code",status :false}
 
     }  
-  
-
+    async sendEmailToSubAdmin() {
+        try {
+            sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+            console.log("inside email to subadmin");
+            const msg = {
+                to: 'harishrana5492@gmail.com',
+                from: 'rana5492@gmail.com',
+                subject: 'Congratulations You are now SubAdmin',
+                text: 'Your OTP',
+                html: `<strong>Congratulations You are now SubAdmin. Please login on the Dashboard using the same credentials</strong>`,
+            };
+            await sgMail.send(msg);
+            console.log("email sent", msg);
+        } catch (error) {
+            console.error("Error sending email:", error);
+           
+        }
+    }
+    
     async reqAction(id, status, remarks, decodedToken) {
         if (status === 'Success') {
             const updation = await affiliateRequest.findByIdAndUpdate(
@@ -47,22 +66,23 @@ class referalAndAffiliate {
                     $set: { requestStatus: status }
                 },
                 { new: true, runValidators: true }
-
             );
-
-            {
-                if (decodedToken.role !== 'admin') {
-                    const roleChange = await model.findByIdAndUpdate({ _id: updation.requestorID },
-                        {
-                            $set: { role: 'subAdmin' }
-                        },
-                        { new: true, runValidators: true }
-                    )
-                    console.log("ischange", roleChange)
-                }
+    
+            if (decodedToken.role === 'admin') {
+                const roleChange = await model.findByIdAndUpdate(
+                    { _id: updation.requestorID },
+                    {
+                        $set: { role: 'subAdmin' }
+                    },
+                    { new: true, runValidators: true }
+                );
+                console.log("is change", roleChange);
             }
-
+    
+            await this.sendEmailToSubAdmin();
         }
+    
+    
         else if (status === 'Failure') {
             if (!remarks) throw "please enter remarks"
             await affiliateRequest.findByIdAndUpdate(

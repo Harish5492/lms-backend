@@ -170,7 +170,8 @@ class UserController {
       } else {
         user = await otpmodel.create({ ...req.body, otp: encOtp })
       }
-      OTPHelper.sendOTPOnMobile(otp)
+      await OTPHelper.sendOTPOnMobile(otp)
+      await OTPHelper.sendOTPOnEmail(otp)
       let currentTime = new Date();
       currentTime.setMinutes(currentTime.getMinutes() + 1);
       const encData = { email: user.email, exp: currentTime }

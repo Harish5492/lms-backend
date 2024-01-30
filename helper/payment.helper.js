@@ -76,7 +76,7 @@ class paymentHelper {
       paymentInstrument: {
         type: 'PAY_PAGE'
       }
-    };
+    }; 
     return data;
   }
   getOptions(checksum, payloadMain) {

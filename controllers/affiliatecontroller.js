@@ -1,4 +1,4 @@
-
+const mongoose = require('mongoose')
 const affiliateRequest = require('../models/affiliateRequestmodel')
 const { Course } = require('../models/coursemodel');
 const {AffiliateMarketings,AffiliateDetails} = require('../models/affiliatemodel')  // Remove curly braces
@@ -7,6 +7,7 @@ const model = require('../models/usermodel');
 const validStatus = ['Success', 'Failure', 'Pending'];
 const CryptoJS = require("crypto-js");
 const Helper = require('../helper/index');
+const { checkEmail } = require('../helper/otp.helper');
 
 const { referalAndAffiliate } = Helper.module
 
@@ -66,14 +67,28 @@ class affiliate {
             const { decodedToken } = req.body
             const { id } = req.params
             console.log(decodedToken,id)
+
+            const check = await AffiliateMarketings.findOne({affiliator: decodedToken.id}).populate('courseDetails')
+console.log("qqqqqqqqqqqq",check)
+            if(check){
+                console.log("inside iff")
+                 for (let elem of check.courseDetails){
+                    if(elem.courseId == id){
+                        console.log("insie",elem.courseId) 
+                        // const token 
+                        return res.json({ message: "token already sent", status: true,token: elem.affiliateToken  })
+                    }
+                 }
+            }
+            console.log("check")
             const Data = await Course.findById(id)
             console.log("ssssssssssssssss",Data)
             const courseData = { course_id: Data.id, course_title: Data.title, course_instructor: Data.instructor, user_id: decodedToken.id }
-            console.log("wwwwwwwwwww",courseData)
+            // console.log("wwwwwwwwwww",courseData)
             const token = CryptoJS.AES.encrypt(JSON.stringify(courseData), key).toString();
-            console.log("pppppppppppppp",token)
+            // console.log("pppppppppppppp",token)
             const document = await AffiliateDetails.create({ courseId: Data._id, affiliateToken: token });
-            console.log("ssssssssssss",document)
+            // console.log("ssssssssssss",document)
 
             const exists = await AffiliateMarketings.findOne({ affiliator: decodedToken.id })
 

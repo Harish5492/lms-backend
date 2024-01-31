@@ -34,7 +34,7 @@ adminRouter.delete('/deleteLesson/:id',authMiddleware,role.isAdmin, CourseContro
 adminRouter.get('/pendingRequests',authMiddleware,role.isAdmin,AffiliateController.pendingRequests)
 adminRouter.post('/affiliationRequestAction/:id',authMiddleware,role.isAdmin,AffiliateController.affiliationRequestAction)
 
-adminRouter.post('/affiliationRecords',authMiddleware,role.isSubAdmin,AffiliateController.affiliationRecords)
+adminRouter.get('/affiliationRecords',authMiddleware,role.isSubAdmin,AffiliateController.affiliationRecords)
 
 adminRouter.get('/payment/getDetails',authMiddleware,role.isAdmin,BillingController.getDetails)
 

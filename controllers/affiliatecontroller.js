@@ -230,7 +230,17 @@ console.log("qqqqqqqqqqqq",check)
 
             const {decodedToken} = req.body
 
-            const records = await AffiliateMarketings.findOne({affiliator:decodedToken.id}).populate('courseDetails')
+            const records = await AffiliateMarketings.findOne({affiliator:decodedToken.id}).populate({
+                path: 'courseDetails',
+                populate: {
+                    path: 'courseId',
+                    model: 'Course' 
+                }
+            })
+
+        //    await records.courseDetails.forEach(item => {
+        //         item.course = item.populate('courseId'); // You can replace 'Male' with the desired value
+        //     });
 
             res.json({ message: "Your Records : ",records, status: true })
 

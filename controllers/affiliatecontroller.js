@@ -224,6 +224,22 @@ console.log("qqqqqqqqqqqq",check)
         }
     }
 
+     async affiliationRecords(req, res) {
+        try {
+            console.log("inside affiliationRecords",req.body)
+
+            const {decodedToken} = req.body
+
+            const records = await AffiliateMarketings.findOne({affiliator:decodedToken.id}).populate('courseDetails')
+
+            res.json({ message: "Your Records : ",records, status: true })
+
+        } catch (error) {
+            res.status(500).send(error);
+        }
+    }
+
+
 }
 
 

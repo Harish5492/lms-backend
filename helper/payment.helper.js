@@ -1,6 +1,8 @@
 const user = require('../models/usermodel');
 const mongoose = require('mongoose')
 const payment = require('../models/payment.model')
+const rewardPayment = require('../models/rewardPayment')
+const rewardRequests = require('../models/rewardRequests')
 const { Course } = require('../models/coursemodel')
 const {AffiliateMarketings,AffiliateDetails} = require('../models/affiliatemodel')
 const crypto = require('crypto');
@@ -71,6 +73,21 @@ class paymentHelper {
       merchantTransactionId: merchantTransactionId,
       amount: totalPrice * 100,
       redirectUrl: `http://10.10.2.82:3000/user/payment/checkStatus/${merchantTransactionId}?${que}`,
+      // redirectUrl: `http://10.10.2.82:8000/user/payment/checkStatus/${merchantTransactionId}?${ur}`,
+      redirectMode: 'REDIRECT',
+      paymentInstrument: {
+        type: 'PAY_PAGE'
+      }
+    }; 
+    return data;
+  }
+  getDataReward(merchantTransactionId, totalPrice, que) {
+    const data = {
+      merchantId: paymentMerchantId,
+      merchantUserId: paymentMerchantUserId,
+      merchantTransactionId: merchantTransactionId,
+      amount: totalPrice * 100,
+      redirectUrl: `http://10.10.2.82:3000/user/sendAmountToSubAdmin/checkRewardStatus/${merchantTransactionId}?${que}`,
       // redirectUrl: `http://10.10.2.82:8000/user/payment/checkStatus/${merchantTransactionId}?${ur}`,
       redirectMode: 'REDIRECT',
       paymentInstrument: {
@@ -162,6 +179,15 @@ class paymentHelper {
     console.log("payment Added Successfully")
   }
 
+  async rewardPayment(paymentDetail) {
+    console.log("inside addPayment")
+    console.log(paymentDetail)
+    const obj = paymentDetail
+    console.log("obj", obj)
+    await payment.create(obj)
+    console.log("payment Added Successfully")
+  }
+
   async updateStatus(merchantTransactionId, status) {
     console.log("inside updateStatus")
     await payment.findOneAndUpdate(
@@ -169,6 +195,24 @@ class paymentHelper {
       { status: status }
     )
     console.log("payment Added Successfully")
+  }
+  async updateRewardStatus(merchantTransactionId, status) {
+    console.log("inside updateStatus")
+    await rewardPayment.findOneAndUpdate(
+      { merchantTransactionId: merchantTransactionId },
+      { status: status }
+    )
+    console.log("reward Added Successfully")
+  }
+
+  async updateRequestAmount (totalPrice,_id){
+    console.log("inside updateReqestAmount")
+    const subAdmin = await rewardRequests.findById({id:_id},'amount')
+    console.log("amount",amount)
+    await rewardRequests.findOneAndUpdate(
+      {subAdminID:_id},
+      {$set:{amount :subAdmin.amount - totalPrice}}
+    )
   }
 
 

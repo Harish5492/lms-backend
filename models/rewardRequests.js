@@ -2,6 +2,7 @@ const mongoose = require('mongoose')
 const Payment = new mongoose.Schema({
   subAdminID: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
   subAdminEmail: { type: String },
+  amount: { type: String, required: [true,] },
 requested_on: { type: Date, default: Date.now },
 });
 

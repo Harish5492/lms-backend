@@ -21,6 +21,7 @@ app.use('/user', Api.billingRouter);
 app.use('/user', Api.courseRouter); 
 app.use('/user', Api.referalRouter); 
 app.use('/user', Api.affiliateRouter);
+app.use('/user', Api.rewardRouter);
 
 app.use('/admin/adminArea', Api.adminRouter); 
 

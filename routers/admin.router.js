@@ -5,7 +5,7 @@ const adminRouter = require('express').Router();
 // const billingController = require('../controllers/billingcontroller')
 
 const Controller = require('../controllers/index')
-const { AffiliateController, BillingController, CourseController,ReferalController,UserController} = Controller.module
+const { AffiliateController, BillingController, CourseController,ReferalController,UserController,RewardToSubAdminController} = Controller.module
 
 // console.log('Controller:', Controller);
 // console.log('Controller.module:', Controller.module);

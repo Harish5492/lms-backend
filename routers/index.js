@@ -5,9 +5,11 @@ const courseRouter = require('./course.router')
 const billingRouter = require('./billing.router')
 const referalRouter = require('./refferal.router')
 const affiliateRouter = require('./affiliate.router')
+const rewardRouter = require('./reward.router')
 const adminRouter = require('./admin.router')
+
 // const routerIndex = { userRouter, otpRouter, billingRouter ,referalRouter ,affiliateRouter,adminRouter }
-const routerIndex = { userRouter, otpRouter, courseRouter, billingRouter ,referalRouter ,affiliateRouter,adminRouter }
+const routerIndex = { userRouter, otpRouter, courseRouter, billingRouter ,referalRouter ,affiliateRouter ,rewardRouter,adminRouter}
 
 module.exports = routerIndex
 

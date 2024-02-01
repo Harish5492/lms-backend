@@ -109,6 +109,7 @@ class BillingController {
       // const que = `${queryString}&student=${student}`
       // ... (previous code)
       const encodedToken = encodeURIComponent(affiliateToken);
+      console.log("daffffffffffffffffaaaaaaaaaaaa",affiliateToken,"fffffffff",encodedToken)
       const que = `${queryString}&student=${student}&affiliateToken=${encodedToken}&totalPrice=${totalPrice}`;
 
 

@@ -1,13 +1,13 @@
-const user = require('../models/usermodel');
+const model = require('../models/usermodel');
 const mongoose = require('mongoose')
 const payment = require('../models/payment.model')
 const rewardPayment = require('../models/rewardPayment')
 const rewardRequests = require('../models/rewardRequests')
 const { Course } = require('../models/coursemodel')
-const {AffiliateMarketings,AffiliateDetails} = require('../models/affiliatemodel')
+const { AffiliateMarketings, AffiliateDetails } = require('../models/affiliatemodel')
 const crypto = require('crypto');
 const CryptoJS = require("crypto-js");
-require('dotenv').config(); 
+require('dotenv').config();
 const paymentKeyIndex = process.env.PAYMENTKEYINDEX;
 const paymentKey = process.env.PAYMENTKEY
 // const paymentMerchantId = process.env.MERCHANTID
@@ -22,7 +22,7 @@ class paymentHelper {
 
   async addCourse(student, coursesArray) {
     console.log("inside addCourse")
-    const result1 = await user.findOneAndUpdate(
+    const result1 = await model.findOneAndUpdate(
       { _id: student },
       {
         $push: { courseEnrolled: coursesArray }
@@ -78,7 +78,7 @@ class paymentHelper {
       paymentInstrument: {
         type: 'PAY_PAGE'
       }
-    }; 
+    };
     return data;
   }
   getDataReward(merchantTransactionId, totalPrice, que) {
@@ -93,7 +93,7 @@ class paymentHelper {
       paymentInstrument: {
         type: 'PAY_PAGE'
       }
-    }; 
+    };
     return data;
   }
   getOptions(checksum, payloadMain) {
@@ -184,8 +184,8 @@ class paymentHelper {
     console.log(paymentDetail)
     const obj = paymentDetail
     console.log("obj", obj)
-    await payment.create(obj)
-    console.log("payment Added Successfully")
+    await rewardPayment.create(obj)
+    console.log("RewardPayment Added Successfully")
   }
 
   async updateStatus(merchantTransactionId, status) {
@@ -205,14 +205,37 @@ class paymentHelper {
     console.log("reward Added Successfully")
   }
 
-  async updateRequestAmount (totalPrice,_id){
+  async updateRequestAmount(totalPrice, SubAdminId) {
     console.log("inside updateReqestAmount")
-    const subAdmin = await rewardRequests.findById({id:_id},'amount')
-    console.log("amount",amount)
+    console.log("details", totalPrice, SubAdminId)
+
+    const subAdmin = await rewardRequests.findOne({ subAdminID: SubAdminId }, 'amount')
+    if (!subAdmin) throw { message: "subAdmin is not found " }
+    console.log("amount", subAdmin.amount)
+    // subAdmin.amount = (parseFloat(subAdmin.amount) - parseFloat(totalPrice)).toString();
+
     await rewardRequests.findOneAndUpdate(
-      {subAdminID:_id},
-      {$set:{amount :subAdmin.amount - totalPrice}}
+      SubAdminId,
+      { $set: { amount: subAdmin.amount - totalPrice } }
     )
+  }
+
+  async deleteRequest(SubAdminId) {
+    console.log("inside DeleteRequest")
+    const subAdmin = await rewardRequests.findOne({ subAdminID: SubAdminId }, 'amount')
+    if (subAdmin.amount == '0') {
+      const deletedRequest = await rewardRequests.findOneAndDelete({ subAdminID: SubAdminId })
+      console.log("Request", deletedRequest)
+    }
+
+    const ChangeStatus = await model.findByIdAndUpdate(
+      SubAdminId,
+      {
+        $set: { rewardRequested: true }
+      }
+    )
+    console.log("changeStatus", ChangeStatus)
+
   }
 
 
@@ -264,10 +287,11 @@ class paymentHelper {
   }
 
   async decodeToken(affiliateToken) {
-    console.log("inside decodeToken")
+    console.log("inside decodeToken",affiliateToken)
 
     let CryDtoken = CryptoJS.AES.decrypt(affiliateToken, affiliationKey);
     let check = CryDtoken.toString(CryptoJS.enc.Utf8);
+    console.log("check",check)
     let decryptedData = JSON.parse(check);
     // console.log("final is here", decryptedData);
     // let CryDtoken = CryptoJS.AES.decrypt(affiliateToken, affiliationKey);
@@ -291,8 +315,9 @@ class paymentHelper {
   // }
 
   async updateReward(affiliateToken, totalPrice) {
-    console.log("inside updateReward");
+    console.log("inside updateReward",affiliateToken, totalPrice);
     const decryptedData = await this.decodeToken(affiliateToken);
+    
     console.log("asssssssssss", decryptedData);
 
     const rewards = 0.1 * totalPrice;
@@ -301,26 +326,27 @@ class paymentHelper {
     console.log("FInddidfninfanfinff", find);
 
     if (find) {
-        const courseDetails = find.courseDetails || [];
-        
-        if (courseDetails.includes(decryptedData.course_id)) {
-            const it = await AffiliateDetails.findById(decryptedData.course_id);
-            
-            if (it) {
-                await AffiliateDetails.findByIdAndUpdate(decryptedData.course_id, {
-                    $set: { rewards: it.rewards + rewards }
-                });
-            }
-        }
+      const courseDetails = find.courseDetails || [];
 
-        await AffiliateMarketings.findOneAndUpdate(
-            { affiliator: decryptedData.user_id },
-            { $set: { totalRewards: find.totalRewards + rewards } }
-        );
+      if (courseDetails.includes(decryptedData.course_id)) {
+        console.log("includessss")
+        const it = await AffiliateDetails.findById(decryptedData.course_id);
+
+        if (it) {
+          await AffiliateDetails.findByIdAndUpdate(decryptedData.course_id, {
+            $set: { rewards: it.rewards + rewards }
+          });
+        }
+      }
+
+      await AffiliateMarketings.findOneAndUpdate(
+        { affiliator: decryptedData.user_id },
+        { $set: { totalRewards: find.totalRewards + rewards } }
+      );
     }
 
     console.log("Payment Added Successfully");
-}
+  }
 
 
 

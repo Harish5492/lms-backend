@@ -14,7 +14,7 @@ class RewardToSubAdminController {
             const { decodedToken, amount } = req.body;
             const check = await model.findById(decodedToken.id, 'rewardRequested')
 
-            if (!check.rewardRequested) throw { message: "already requested", status: false }
+            if (!check.rewardRequested) throw { message: "already requested - You Can not send multiple requests,kindly Wait to accept first Request", status: false }
 
             console.log(decodedToken)
             await rewardRequests.create({ subAdminID: decodedToken.id, subAdminEmail: decodedToken.email, amount: amount });
@@ -120,7 +120,7 @@ class RewardToSubAdminController {
     }
     
   async checkRewardStatus(req, res) {
-    const {totalPrice,_id} = req.query
+    const {totalPrice,SubAdminId} = req.query
     console.log("query", req.query)
     const merchantTransactionId = req.params['txnId']
     const merchantId = paymentMerchantId
@@ -133,7 +133,8 @@ class RewardToSubAdminController {
       if (response.data.success === true && response.data.code != "PAYMENT_PENDING") {
         console.log(response.data)///
         await paymentHelper.updateRewardStatus(merchantTransactionId, "Success")
-        await paymentHelper.updateRequestAmount(totalPrice,_id)
+        await paymentHelper.updateRequestAmount(totalPrice,SubAdminId)
+        await paymentHelper.deleteRequest(SubAdminId)
         return res.status(400).send({ success: true, message: "Payment Successfull" });
 
       } else if (response.data.success === false && response.data.code != "PAYMENT_PENDING") {
@@ -145,11 +146,11 @@ class RewardToSubAdminController {
       }
     })
       .catch((err) => {
-        console.error("rrrrrrrrrrrrrrr", err);
+        console.error("yo this error bro", err);
         res.status(500).send({ msg: err.message });
       });
 
-  };
+  }; 
 
    
 }

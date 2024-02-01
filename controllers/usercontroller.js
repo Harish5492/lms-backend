@@ -277,7 +277,7 @@ class UserController {
       if (!user || !(await bcrypt.compare(password, user.password))) {
         throw { message: 'Invalid Login Credentials', status: false };
       }
-      const token = jwt.sign({ email: user.email, id: user._id, role: user.role }, key, { expiresIn: '10h' });
+      const token = jwt.sign({ email: user.email, id: user._id, role: user.role }, key, { expiresIn: '1m' });
       return res.send({ token, status: true,role: user.role });
     } catch (error) {
       res.json({ error, status: false });

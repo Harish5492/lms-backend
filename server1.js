@@ -21,10 +21,15 @@ app.use(express.json());
 app.use(bodyParser.json());
 
 // Routers
-app.use('/user', Api.userRouter);
-app.use('/user', Api.otpRouter);
-app.use('/user', Api.billingRouter);
-app.use('/user', Api.courseRouter);
+app.use('/user', Api.userRouter); 
+app.use('/user', Api.otpRouter); 
+app.use('/user', Api.billingRouter); 
+app.use('/user', Api.courseRouter); 
+app.use('/user', Api.referalRouter); 
+app.use('/user', Api.affiliateRouter);
+app.use('/user', Api.rewardRouter);
+
+app.use('/admin/adminArea', Api.adminRouter); 
 
 // Attach WebSocket
 attachWebSocket(server);

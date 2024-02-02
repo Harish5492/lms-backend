@@ -241,7 +241,7 @@ console.log("qqqqqqqqqqqq",check)
         //    await records.courseDetails.forEach(item => {
         //         item.course = item.populate('courseId'); // You can replace 'Male' with the desired value
         //     });
-
+console.log(records)
             res.json({ message: "Your Records : ",records, status: true })
 
         } catch (error) {

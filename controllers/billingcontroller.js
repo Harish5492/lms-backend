@@ -153,26 +153,33 @@ class BillingController {
     console.log("query", req.query)
     const { course, student, totalPrice } = req.query
     const merchantTransactionId = req.params['txnId']
-    const affiliateToken = decodeURIComponent(req.query.affiliateToken);
+    const affiliateToken = (req.query.affiliateToken) || '';
 
 
-    // const affiliateToken ="U2FsdGVkX19NXifO6j6t+YUX/K/Uc/Xtar6mNBCdYnfBKdqj9If9S6p13/Lyt0GQibdKR7p6blEc0ugJcHeLssYZ9JE7NnRIEe7/vJ38qjkp2rw5TCF8tdJeIaNFhogPz2GQjRaPDfek58gfVKlLGRmoIiwe7ByEyzVSB8+2cxAZto7Ra6j2cIX9h6V0kM8u2r5J9Fl/EGcFbTVxapZR78WpGjxQn5ksrOqe7wLvI0dtZ3qyhMH9lBdA9QI+wAAu"
+    // const affiliateToken ="U2FsdGVkX18jeqY1EPLrKYRbkPKivh6uNPRlSd0WA2Y343fkFk+mk25ggXs8c4G2aT0+LDZzbNL5V+NSs5EJEOX2jsY/YNQkOhJ6gwCrJZ0hcg97pKO3TjAbl99zxSMJQ5/Av1QzyNZvSVt0rg7C/CiPB2qqiaRFyD+bTPyLVx0fXDd/fh2WECUjLFFh8s6neOuomVvSOazTLnihtq+d8dLIC49+v09TS5hX34CObdE="
+    // const encodedToken = encodeURIComponent(affiliateToken);
+    // console.log("affiliation",affiliateToken,"\n encoded",encodedToken)
+    console.log("affiliation",affiliateToken)
     const merchantId = paymentMerchantId
     const { checksum } = paymentHelper.checkHashing(merchantTransactionId)
-    console.log(checksum)
-    console.log("affiliateTokenaffiliateTokenaffiliateTokenaffiliateTokenaffiliateTokenaffiliateTokenaffiliateToken", affiliateToken)
+    // console.log(checksum)
+    // console.log("affiliateTokenaffiliateTokenaffiliateTokenaffiliateTokenaffiliateTokenaffiliateTokenaffiliateToken", affiliateToken)
     const options = paymentHelper.getCheckOptions(merchantId, merchantTransactionId, checksum)
-    console.log(options)
+    // console.log(options)
     axios.request(options).then(async (response) => {
       console.log("inside")
       if (response.data.success === true && response.data.code != "PAYMENT_PENDING") {
-        console.log(response.data)///
+        // console.log(response.data)///
 
         await paymentHelper.addCourse(student, course)
         await paymentHelper.updateStatus(merchantTransactionId, "Success")
         await paymentHelper.studentEnrolled(student, course)
-        if (affiliateToken) {
-          await paymentHelper.updateReward(affiliateToken, totalPrice)
+
+        if (affiliateToken !='') {
+          // const affiliateToken1 = decodeURIComponent(encodedToken);
+          const affiliateToken1 = decodeURIComponent(affiliateToken);
+          console.log("decoded",affiliateToken1)
+          await paymentHelper.updateReward(affiliateToken1, totalPrice)
         }
         console.log("insideUpdateCheck", affiliateToken)
         // return res.status(200).send({ success: true, message: "Payment Success" });

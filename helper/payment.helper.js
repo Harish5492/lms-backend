@@ -315,33 +315,44 @@ class paymentHelper {
   // }
 
   async updateReward(affiliateToken, totalPrice) {
-    console.log("inside updateReward",affiliateToken, totalPrice);
+    // console.log("\n\n\n\n\ninside updateReward",affiliateToken, totalPrice);
     const decryptedData = await this.decodeToken(affiliateToken);
     
-    console.log("asssssssssss", decryptedData);
+    // console.log("asssssssssss", decryptedData);
 
-    const rewards = 0.1 * totalPrice;
-
-    const find = await AffiliateMarketings.findOne({ affiliator: decryptedData.user_id });
-    console.log("FInddidfninfanfinff", find);
+    const newrewards = 0.1 * totalPrice;
+    // console.log("rewardsssss",newrewards)
+    const find = await AffiliateMarketings.findOne({ affiliator: decryptedData.user_id }).populate({
+      path: 'courseDetails',
+      populate: {
+          path: 'courseId',
+          model: 'Course' 
+      }
+  });
+    // console.log("FInddidfninfanfinff", find);
 
     if (find) {
       const courseDetails = find.courseDetails || [];
-
-      if (courseDetails.includes(decryptedData.course_id)) {
-        console.log("includessss")
-        const it = await AffiliateDetails.findById(decryptedData.course_id);
-
+      // console.log("courseDetailsss",courseDetails)
+      for (let e of courseDetails){
+        // console.log(e.courseId._id,'/n\n')
+        if (e.courseId._id == decryptedData.course_id) {
+        // console.log("includessss")
+        const it = await AffiliateDetails.findOne({courseId:decryptedData.course_id});
+        // console.log("iiiiitttttttttttt",it.rewards)
         if (it) {
-          await AffiliateDetails.findByIdAndUpdate(decryptedData.course_id, {
-            $set: { rewards: it.rewards + rewards }
+          // console.log("iinnnnsssssiiiiiiddddeeeeeee")
+          await AffiliateDetails.findOneAndUpdate(
+            {courseId: decryptedData.course_id}, 
+            {
+               $set: { rewards: it.rewards + newrewards }
           });
         }
-      }
+      }}
 
       await AffiliateMarketings.findOneAndUpdate(
         { affiliator: decryptedData.user_id },
-        { $set: { totalRewards: find.totalRewards + rewards } }
+        { $set: { totalRewards: find.totalRewards + newrewards } }
       );
     }
 

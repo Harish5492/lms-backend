@@ -10,12 +10,12 @@ const attachWebSocket = require('./websocket/websocket');
 const app = express();
 const server = http.createServer(app);
 
-const port = process.env.PORT || 8000;
+const port = 3000;
 
 // Connect to the database
 mongoDB();
 
-// Middleware
+// Middleware 
 app.use(cors());
 app.use(express.json());
 app.use(bodyParser.json());

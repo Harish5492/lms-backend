@@ -10,16 +10,24 @@ function attachWebSocket(server) {
   wss.on('connection', (ws) => {
     console.log('WebSocket connected');
 
+    const data = `${'Hi, You are connected with Harish Rana and Ayush Jamwal'}`
     // Event handler for incoming WebSocket messages
     ws.on('message', (message) => {
       console.log(`Received: ${message}`);
       // Handle WebSocket messages here
+      ws.send(`${data}`)
+      console.log(`Your reply: ${data}`);
+
     });
+
 
     // Event handler when a WebSocket connection is closed
     ws.on('close', () => {
       console.log('WebSocket closed');
-    });
+
+    }); 
+
+    ws.send("Hi There You are now connected to BackEnd")
   });
 }
 

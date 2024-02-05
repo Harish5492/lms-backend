@@ -1,35 +1,35 @@
-// websocket.js
 const WebSocket = require('ws');
 
-// Function to attach WebSocket to the server
-function attachWebSocket(server) {
-  // Create a WebSocket server using the provided HTTP server
-  const wss = new WebSocket.Server({ server });
+let wss;
 
-  // Event handler when a WebSocket connection is established
+function attachWebSocket(server) {
+  wss = new WebSocket.Server({ server });
+
   wss.on('connection', (ws) => {
     console.log('WebSocket connected');
 
-    const data = `${'Hi, You are connected with Harish Rana and Ayush Jamwal'}`
-    // Event handler for incoming WebSocket messages
+    const data = `${'Hi, You are connected with Harish Rana and Ayush Jamwal'}`;
+
     ws.on('message', (message) => {
       console.log(`Received: ${message}`);
-      // Handle WebSocket messages here
-      ws.send(`${data}`)
+      ws.send(`${data}`);
       console.log(`Your reply: ${data}`);
-
     });
 
-
-    // Event handler when a WebSocket connection is closed
     ws.on('close', () => {
       console.log('WebSocket closed');
+    });
 
-    }); 
-
-    ws.send("Hi There You are now connected to BackEnd")
+    ws.send("Hi There You are now connected to BackEnd");
   });
 }
 
-// Export the function for use in other files
-module.exports = attachWebSocket;
+function sendNotificationToAll(message) {
+  wss.clients.forEach((client) => {
+    if (client.readyState === WebSocket.OPEN) {
+      client.send(JSON.stringify({ type: 'Notification', message }));
+    }
+  });
+}
+
+module.exports = { attachWebSocket, sendNotificationToAll };

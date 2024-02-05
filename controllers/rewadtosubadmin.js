@@ -1,4 +1,5 @@
 const rewardRequests = require('../models/rewardRequests')
+const { sendNotificationToAll} = require('../websocket/websocket');
 const model = require('../models/usermodel');
 const Helper = require('../helper/index');
 const axios = require('axios');
@@ -14,7 +15,7 @@ class RewardToSubAdminController {
             const { decodedToken, amount } = req.body;
             const check = await model.findById(decodedToken.id, 'rewardRequested')
 
-            if (!check.rewardRequested) throw { message: "already requested - You Can not send multiple requests,kindly Wait to accept first Request", status: false }
+            // if (!check.rewardRequested) throw { message: "already requested - You Can not send multiple requests,kindly Wait to accept first Request", status: false }
 
             console.log(decodedToken)
             await rewardRequests.create({ subAdminID: decodedToken.id, subAdminEmail: decodedToken.email, amount: amount });
@@ -23,6 +24,9 @@ class RewardToSubAdminController {
                 decodedToken.id,
                 { $set: { rewardRequested: false } }
             )
+    
+          sendNotificationToAll('New sub-admin request Sent Kindly Check!');
+         
 
             res.json({ message: "Request Sent", status: true })
 

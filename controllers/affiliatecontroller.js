@@ -2,7 +2,7 @@ const mongoose = require('mongoose')
 const affiliateRequest = require('../models/affiliateRequestmodel')
 const { Course } = require('../models/coursemodel');
 const {AffiliateMarketings,AffiliateDetails} = require('../models/affiliatemodel')  // Remove curly braces
-
+const {sendNotificationToAll} = require('../websocket/websocket');
 const model = require('../models/usermodel');
 const validStatus = ['Success', 'Failure', 'Pending'];
 const CryptoJS = require("crypto-js");
@@ -150,6 +150,8 @@ console.log("qqqqqqqqqqqq",check)
                 decodedToken.id,
                 { $set: { affilliationLinkRequested: false } }
             )
+            sendNotificationToAll('New Affiliation Request Sent Kindly Check!');
+         
 
             res.json({ message: "Request Sent", status: true })
 

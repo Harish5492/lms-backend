@@ -14,6 +14,7 @@ const affiliateSchema = new mongoose.Schema({
     affiliator: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
     totalRewards: { type: Number, default: 0 },
     created_on: { type: Date, default: Date.now }
+    
 });
 
 // affiliateSchema.virtual('totalRewards').get(function () {

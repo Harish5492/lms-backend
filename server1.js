@@ -5,7 +5,7 @@ const bodyParser = require('body-parser');
 const cors = require('cors');
 const mongoDB = require('./config/database');
 const Api = require('./routers/index');
-const attachWebSocket = require('./websocket/websocket');
+const {attachWebSocket,sendNotificationToAll} = require('./websocket/websocket');
 
 const app = express();
 const server = http.createServer(app);

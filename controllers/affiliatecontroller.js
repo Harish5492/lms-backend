@@ -150,7 +150,7 @@ console.log("qqqqqqqqqqqq",check)
                 decodedToken.id,
                 { $set: { affilliationLinkRequested: false } }
             )
-            sendNotificationToAll('New Affiliation Request Sent Kindly Check!');
+            sendNotificationToAll(`New Affiliation Request has been send by User having email is : - ${decodedToken.email} Sent Kindly Check!`);
          
 
             res.json({ message: "Request Sent", status: true })

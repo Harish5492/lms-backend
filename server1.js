@@ -21,10 +21,9 @@ app.use(express.json());
 app.use(bodyParser.json());
 
 // Routers
-app.use('/', (req,res)=>{
-  res.json({message : "successful
-  "})
-})
+// app.use('/', (req,res)=>{
+//   res.json({message : "successful "})
+// })
 app.use('/user', Api.userRouter); 
 app.use('/user', Api.otpRouter); 
 app.use('/user', Api.billingRouter); 

@@ -12,6 +12,7 @@ class RewardToSubAdminController {
 
     async subAdminRequests(req, res) {
         try {
+            console.log("inside subAdminRequests",req.body)
             const { decodedToken, amount } = req.body;
             const check = await model.findById(decodedToken.id, 'rewardRequested')
 
@@ -25,7 +26,7 @@ class RewardToSubAdminController {
                 { $set: { rewardRequested: false } }
             )
     
-          sendNotificationToAll('New sub-admin request Sent Kindly Check!');
+          sendNotificationToAll(`New Request has been sent by subAdmin having email is : - ${decodedToken.email} -- Kindly Check!`);
          
 
             res.json({ message: "Request Sent", status: true })

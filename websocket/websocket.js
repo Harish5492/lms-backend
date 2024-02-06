@@ -12,8 +12,9 @@ function attachWebSocket(server) {
 
     ws.on('message', (message) => {
       console.log(`Received: ${message}`);
-      ws.send(`${data}`);
+      ws.send(`${message}`);
       console.log(`Your reply: ${data}`);
+      console.log(`Client reply: ${message}`);
     });
 
     ws.on('close', () => {
@@ -27,7 +28,8 @@ function attachWebSocket(server) {
 function sendNotificationToAll(message) {
   wss.clients.forEach((client) => {
     if (client.readyState === WebSocket.OPEN) {
-      client.send(JSON.stringify({ type: 'Notification', message }));
+      // client.send(JSON.stringify({ type: 'Notification', message }));
+      client.send( message );
     }
   });
 }

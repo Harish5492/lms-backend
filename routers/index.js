@@ -7,9 +7,10 @@ const referalRouter = require('./refferal.router')
 const affiliateRouter = require('./affiliate.router')
 const rewardRouter = require('./reward.router')
 const adminRouter = require('./admin.router')
+const asbRouter = require('./asb.router')
 
 // const routerIndex = { userRouter, otpRouter, billingRouter ,referalRouter ,affiliateRouter,adminRouter }
-const routerIndex = { userRouter, otpRouter, courseRouter, billingRouter ,referalRouter ,affiliateRouter ,rewardRouter,adminRouter}
+const routerIndex = { userRouter, otpRouter, courseRouter, billingRouter ,referalRouter ,affiliateRouter ,rewardRouter,adminRouter,asbRouter}
 
 module.exports = routerIndex
 

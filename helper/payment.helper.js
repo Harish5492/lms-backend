@@ -87,7 +87,7 @@ class paymentHelper {
       merchantUserId: paymentMerchantUserId,
       merchantTransactionId: merchantTransactionId,
       amount: totalPrice * 100,
-      redirectUrl: `http://10.10.2.82:3000/user/sendAmountToSubAdmin/checkRewardStatus/${merchantTransactionId}?${que}`,
+      redirectUrl: `http://10.10.2.82:3000/admin/adminArea/sendAmountToSubAdmin/checkRewardStatus/${merchantTransactionId}?${que}`,
       // redirectUrl: `http://10.10.2.82:8000/user/payment/checkStatus/${merchantTransactionId}?${ur}`,
       redirectMode: 'REDIRECT',
       paymentInstrument: {
@@ -150,7 +150,7 @@ class paymentHelper {
     }, 0);
 
     console.log('totalAmount', totalAmount);
-    console.log('typeoftotalAmount', typeof totalAmount);
+    console.log('typeoftotalAmount', typeof totalAmount); 
     console.log('typeoftotalPrice', typeof totalPrice);
 
     // const discountPercentage = 10;
@@ -218,6 +218,24 @@ class paymentHelper {
       SubAdminId,
       { $set: { amount: subAdmin.amount - totalPrice } }
     )
+
+
+  }
+  async updateRewardEarned(totalPrice, SubAdminId) {
+    console.log("inside updateReqestAmount")
+    console.log("details", totalPrice, SubAdminId)
+
+    const subAdmin = await AffiliateMarketings.findOne({ affiliator: SubAdminId }, 'totalRewards')
+    if (!subAdmin) throw { message: "subAdmin is not found " }
+    console.log("amount", subAdmin.totalRewards)
+    // subAdmin.amount = (parseFloat(subAdmin.amount) - parseFloat(totalPrice)).toString();
+
+    await AffiliateMarketings.findOneAndUpdate(
+      SubAdminId,
+      { $set: { totalRewards: subAdmin.totalRewards - totalPrice } }
+    )
+
+
   }
 
   async deleteRequest(SubAdminId) {
@@ -318,7 +336,7 @@ class paymentHelper {
     // console.log("\n\n\n\n\ninside updateReward",affiliateToken, totalPrice);
     const decryptedData = await this.decodeToken(affiliateToken);
     
-    // console.log("asssssssssss", decryptedData);
+    console.log("asssssssssss", decryptedData);
 
     const newrewards = 0.1 * totalPrice;
     // console.log("rewardsssss",newrewards)
@@ -333,15 +351,15 @@ class paymentHelper {
 
     if (find) {
       const courseDetails = find.courseDetails || [];
-      // console.log("courseDetailsss",courseDetails)
+      console.log("courseDetailsss",courseDetails)
       for (let e of courseDetails){
-        // console.log(e.courseId._id,'/n\n')
+        console.log(e.courseId._id,'/n\n')
         if (e.courseId._id == decryptedData.course_id) {
-        // console.log("includessss")
+        console.log("includessss")
         const it = await AffiliateDetails.findOne({courseId:decryptedData.course_id});
-        // console.log("iiiiitttttttttttt",it.rewards)
+        console.log("iiiiitttttttttttt",it.rewards)
         if (it) {
-          // console.log("iinnnnsssssiiiiiiddddeeeeeee")
+          console.log("iinnnnsssssiiiiiiddddeeeeeee")
           await AffiliateDetails.findOneAndUpdate(
             {courseId: decryptedData.course_id}, 
             {

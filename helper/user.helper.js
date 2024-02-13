@@ -7,7 +7,7 @@ class UserHelper {
     const salt = await bcrypt.genSalt(10);
     const password = await bcrypt.hash(userPassword, salt);
     console.log("password", password)
-    return password
+    return password;
 
   }
 

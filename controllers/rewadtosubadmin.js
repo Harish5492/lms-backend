@@ -1,9 +1,10 @@
 const rewardRequests = require('../models/rewardRequests')
-const { sendNotificationToAll} = require('../websocket/websocket');
+const { sendNotificationToAll } = require('../websocket/websocket');
 const model = require('../models/usermodel');
 const Helper = require('../helper/index');
 const axios = require('axios');
 const rewardPayment = require('../models/rewardPayment')
+const { AffiliateMarketings } = require('../models/affiliatemodel')
 const paymentMerchantId = 'PGTESTPAYUAT'
 
 const { paymentHelper } = Helper.module
@@ -12,22 +13,25 @@ class RewardToSubAdminController {
 
     async subAdminRequests(req, res) {
         try {
-            console.log("inside subAdminRequests",req.body)
+            console.log("inside subAdminRequests", req.body)
             const { decodedToken, amount } = req.body;
-            const check = await model.findById(decodedToken.id, 'rewardRequested')
+            const checkRewardExists = await AffiliateMarketings.findOne({ affiliator: decodedToken.id }, 'totalRewards')
+            console.log("checkRewardExists.totalRewards", checkRewardExists.totalRewards)
+            if (!(amount <= checkRewardExists.totalRewards )) throw { message: "Your amount should be less than or equal to the totalReward You have earned", status: false }
+            const checkSubAdmin = await model.findById(decodedToken.id, 'rewardRequested')
 
-            // if (!check.rewardRequested) throw { message: "already requested - You Can not send multiple requests,kindly Wait to accept first Request", status: false }
+            if (!checkSubAdmin.rewardRequested) throw { message: "already requested - You Can not send multiple requests,kindly Wait to accept first Request", status: false }
 
-            console.log(decodedToken)
+            console.log(decodedToken, "decodedToken is")
             await rewardRequests.create({ subAdminID: decodedToken.id, subAdminEmail: decodedToken.email, amount: amount });
 
             await model.findByIdAndUpdate(
                 decodedToken.id,
                 { $set: { rewardRequested: false } }
             )
-    
-          sendNotificationToAll(`New Request has been sent by subAdmin having email is : - ${decodedToken.email} -- Kindly Check!`);
-         
+
+            sendNotificationToAll(`New Request has been sent by subAdmin having email is : - ${decodedToken.email} -- Kindly Check!`);
+
 
             res.json({ message: "Request Sent", status: true })
 
@@ -84,15 +88,16 @@ class RewardToSubAdminController {
     }
 
     async sendAmountToSubAdmin(req, res) {
+
         try {
-            console.log("inside SendRewardToSubAdmin")
+            console.log("inside SendRewardToSubAdmin", req.body)
             const { totalPrice, _id } = req.body
             const subAdmin = await model.findById({ _id: _id }, 'email')
-            console.log("subAdmin",subAdmin.email)
+            console.log("subAdmin", subAdmin.email)
             const que = `totalPrice=${totalPrice}&SubAdminId=${_id}`;
 
             const merchantTransactionId = paymentHelper.generateTransactionId()
-            const data = paymentHelper.getDataReward(merchantTransactionId, totalPrice,que)
+            const data = paymentHelper.getDataReward(merchantTransactionId, totalPrice, que)
             const { checksum, payloadMain } = paymentHelper.hashing(data)
             const options = paymentHelper.getOptions(checksum, payloadMain)
 
@@ -123,41 +128,44 @@ class RewardToSubAdminController {
 
         }
     }
-    
-  async checkRewardStatus(req, res) {
-    const {totalPrice,SubAdminId} = req.query
-    console.log("query", req.query)
-    const merchantTransactionId = req.params['txnId']
-    const merchantId = paymentMerchantId
-    const { checksum } = paymentHelper.checkHashing(merchantTransactionId)
-    console.log(checksum)
-    const options = paymentHelper.getCheckOptions(merchantId, merchantTransactionId, checksum)
-    console.log(options)
-    axios.request(options).then(async (response) => {
-      console.log("inside")
-      if (response.data.success === true && response.data.code != "PAYMENT_PENDING") {
-        console.log(response.data)///
-        await paymentHelper.updateRewardStatus(merchantTransactionId, "Success")
-        await paymentHelper.updateRequestAmount(totalPrice,SubAdminId)
-        await paymentHelper.deleteRequest(SubAdminId)
-        return res.status(400).send({ success: true, message: "Payment Successfull" });
 
-      } else if (response.data.success === false && response.data.code != "PAYMENT_PENDING") {
-        paymentHelper.updateStatus(merchantTransactionId, "Failure")
-        return res.status(400).send({ success: false, message: "Payment Failure" });
-      }
-      else {
-        return res.status(400).send({ success: false, message: "Payment Pending" });
-      }
-    })
-      .catch((err) => {
-        console.error("yo this error bro", err);
-        res.status(500).send({ msg: err.message });
-      });
+    async checkRewardStatus(req, res) {
+        const { totalPrice, SubAdminId } = req.query
+        console.log("query", req.query)
+        const merchantTransactionId = req.params['txnId']
+        const merchantId = paymentMerchantId
+        const { checksum } = paymentHelper.checkHashing(merchantTransactionId)
+        console.log(checksum)
+        const options = paymentHelper.getCheckOptions(merchantId, merchantTransactionId, checksum)
+        console.log(options)
+        axios.request(options).then(async (response) => {
+            console.log("inside")
+            if (response.data.success === true && response.data.code != "PAYMENT_PENDING") {
+                console.log(response.data)///
+                await paymentHelper.updateRewardStatus(merchantTransactionId, "Success")
+                await paymentHelper.updateRequestAmount(totalPrice, SubAdminId)
+                await paymentHelper.updateRewardEarned(totalPrice, SubAdminId)
+                await paymentHelper.deleteRequest(SubAdminId)
+                // return res.status(400).send({ success: true, message: "Payment Successfull" });
+                return res.redirect('http://10.10.2.37:3000/Requests')
 
-  }; 
 
-   
+            } else if (response.data.success === false && response.data.code != "PAYMENT_PENDING") {
+                paymentHelper.updateStatus(merchantTransactionId, "Failure")
+                return res.status(400).send({ success: false, message: "Payment Failure" });
+            }
+            else {
+                return res.status(400).send({ success: false, message: "Payment Pending" });
+            }
+        })
+            .catch((err) => {
+                console.error("yo this error bro", err);
+                res.status(500).send({ msg: err.message });
+            });
+
+    };
+
+
 }
 
 module.exports = new RewardToSubAdminController()

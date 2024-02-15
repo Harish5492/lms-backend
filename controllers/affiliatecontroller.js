@@ -12,7 +12,7 @@ const { checkEmail } = require('../helper/otp.helper');
 const { referalAndAffiliate } = Helper.module
 
 
-require('dotenv').config();
+require('dotenv').config(); 
 
 const key = process.env.AFFILIATETOKENKEY
 class affiliate {

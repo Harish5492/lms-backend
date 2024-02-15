@@ -4,6 +4,7 @@ const otpmodel = require('../models/otpmodel')
 require('dotenv').config();
 const accountSid = process.env.accountSid;
 const authToken = process.env.authToken;
+
 const client = require('twilio')(accountSid, authToken);
 const sgMail = require('@sendgrid/mail');
 const CryptoJS = require("crypto-js");

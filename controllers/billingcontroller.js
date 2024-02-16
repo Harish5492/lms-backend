@@ -6,6 +6,7 @@ const model = require('../models/usermodel')
 const axios = require('axios');
 const Helper = require('../helper/index');
 const { decode } = require('jsonwebtoken');
+const { sendNotificationToAll } = require('../websocket/websocket');
 const { paymentHelper } = Helper.module
 require("dotenv").config();
 // const paymentMerchantId = process.env.MERCHANTID
@@ -98,7 +99,6 @@ class BillingController {
       const productIds = queryParams.map(param => {
         const [, productId] = param.split('='); // Using destructuring to get the second part after '='
         return productId
-
       })
       console.log("id", productIds)
       console.log("affiliateTokenaffiliateTokenaffiliateToken", affiliateToken)
@@ -174,6 +174,7 @@ class BillingController {
         await paymentHelper.addCourse(student, course)
         await paymentHelper.updateStatus(merchantTransactionId, "Success")
         await paymentHelper.studentEnrolled(student, course)
+        sendNotificationToAll(`Congratulations, successfully purchased`);
 
         if (affiliateToken !='') {
           // const affiliateToken1 = decodeURIComponent(encodedToken);

@@ -129,6 +129,14 @@ class paymentHelper {
 
   }
 
+  // async getCourseData(productIds) {
+
+  //   const data = await Course.findById(productIds,'title');
+  //   return data;
+  
+  // }
+
+
   //   async checkAmount(productIds,totalPrice){
   //     console.log("inside checkamount",productIds,totalPrice)
   //     const totalAmount = await Course.findOne({_id:productIds},'price')
@@ -150,7 +158,7 @@ class paymentHelper {
     }, 0);
 
     console.log('totalAmount', totalAmount);
-    console.log('typeoftotalAmount', typeof totalAmount); 
+    console.log('typeoftotalAmount', typeof totalAmount);
     console.log('typeoftotalPrice', typeof totalPrice);
 
     // const discountPercentage = 10;
@@ -305,11 +313,11 @@ class paymentHelper {
   }
 
   async decodeToken(affiliateToken) {
-    console.log("inside decodeToken",affiliateToken)
+    console.log("inside decodeToken", affiliateToken)
 
     let CryDtoken = CryptoJS.AES.decrypt(affiliateToken, affiliationKey);
     let check = CryDtoken.toString(CryptoJS.enc.Utf8);
-    console.log("check",check)
+    console.log("check", check)
     let decryptedData = JSON.parse(check);
     // console.log("final is here", decryptedData);
     // let CryDtoken = CryptoJS.AES.decrypt(affiliateToken, affiliationKey);
@@ -335,7 +343,7 @@ class paymentHelper {
   async updateReward(affiliateToken, totalPrice) {
     // console.log("\n\n\n\n\ninside updateReward",affiliateToken, totalPrice);
     const decryptedData = await this.decodeToken(affiliateToken);
-    
+
     console.log("asssssssssss", decryptedData);
 
     const newrewards = 0.1 * totalPrice;
@@ -343,30 +351,31 @@ class paymentHelper {
     const find = await AffiliateMarketings.findOne({ affiliator: decryptedData.user_id }).populate({
       path: 'courseDetails',
       populate: {
-          path: 'courseId',
-          model: 'Course' 
+        path: 'courseId',
+        model: 'Course'
       }
-  });
+    });
     // console.log("FInddidfninfanfinff", find);
 
     if (find) {
       const courseDetails = find.courseDetails || [];
-      console.log("courseDetailsss",courseDetails)
-      for (let e of courseDetails){
-        console.log(e.courseId._id,'/n\n')
+      console.log("courseDetailsss", courseDetails)
+      for (let e of courseDetails) {
+        console.log(e.courseId._id, '/n\n')
         if (e.courseId._id == decryptedData.course_id) {
-        console.log("includessss")
-        const it = await AffiliateDetails.findOne({courseId:decryptedData.course_id});
-        console.log("iiiiitttttttttttt",it.rewards)
-        if (it) {
-          console.log("iinnnnsssssiiiiiiddddeeeeeee")
-          await AffiliateDetails.findOneAndUpdate(
-            {courseId: decryptedData.course_id}, 
-            {
-               $set: { rewards: it.rewards + newrewards }
-          });
+          console.log("includessss")
+          const it = await AffiliateDetails.findOne({ courseId: decryptedData.course_id });
+          console.log("iiiiitttttttttttt", it.rewards)
+          if (it) {
+            console.log("iinnnnsssssiiiiiiddddeeeeeee")
+            await AffiliateDetails.findOneAndUpdate(
+              { courseId: decryptedData.course_id },
+              {
+                $set: { rewards: it.rewards + newrewards }
+              });
+          }
         }
-      }}
+      }
 
       await AffiliateMarketings.findOneAndUpdate(
         { affiliator: decryptedData.user_id },

@@ -16,8 +16,7 @@ class UserHelper {
       { email: email },
       { password: password },
       { new: true }
-    );
-
+    ); 
   }
 
   async userCheck(email, userName, phoneNumber) {
@@ -29,12 +28,6 @@ class UserHelper {
     const phoneExist = await model.findOne({ phoneNumber: phoneNumber })
     if (phoneExist) throw { message: "phoneNumber already exists", status: false }
   }
-
-
-  // async userName(username){
-  //   const
-  // }
-
 
 
 }

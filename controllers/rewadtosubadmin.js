@@ -6,7 +6,6 @@ const axios = require('axios');
 const rewardPayment = require('../models/rewardPayment')
 const { AffiliateMarketings } = require('../models/affiliatemodel')
 const paymentMerchantId = 'PGTESTPAYUAT'
-
 const { paymentHelper } = Helper.module
 
 class RewardToSubAdminController {
